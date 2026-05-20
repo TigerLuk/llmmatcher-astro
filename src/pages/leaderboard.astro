@@ -1,0 +1,71 @@
+---
+import Base from '../layouts/Base.astro';
+import { models } from '../data/models';
+import { affiliates } from '../data/affiliates';
+---
+<Base title="LLM Leaderboard — Most Popular Local AI Models by GPU"
+  description="Community-voted rankings of the most popular local LLMs. Vote for the model you actually use on your GPU.">
+  <div class="container" style="padding-top:2rem">
+    <h1>🏆 Community Leaderboard</h1>
+    <p style="color:var(--text-secondary);margin-bottom:2rem">
+      Which LLMs do people actually run locally? Vote after matching your GPU.
+    </p>
+    <div id="board">
+      <div class="loading">Loading votes...</div>
+    </div>
+    <div style="margin-top:2rem;text-align:center">
+      <a href={affiliates.runpod} class="btn btn-secondary" target="_blank" rel="noopener noreferrer sponsored"
+         onclick="trackEvent('affiliate_click',{affiliate:'runpod',context:'leaderboard'})">
+        ⚡ Run top models in the cloud — RunPod
+      </a>
+    </div>
+  </div>
+</Base>
+
+<script>
+import { models } from '../data/models';
+
+async function loadLeaderboard() {
+  const board = document.getElementById('board');
+  if (!board) return;
+  try {
+    const res = await fetch('/api/leaderboard');
+    const data = await res.json() as Array<{ model_slug: string; votes: number }>;
+    if (!data.length) {
+      board.innerHTML = '<p style="color:var(--text-secondary);text-align:center">No votes yet. Be the first! <a href="/">Match your GPU →</a></p>';
+      return;
+    }
+    board.innerHTML = data.map((row, i) => {
+      const model = models.find((m) => m.slug === row.model_slug);
+      const name = model?.name || row.model_slug;
+      return `
+        <div class="board-row">
+          <span class="board-rank">#${i + 1}</span>
+          <div class="board-info">
+            <a href="/models/${row.model_slug}" class="board-name">${name}</a>
+            ${model ? `<div class="board-tags">${model.tags.map((t) => `<span class="badge tag">${t}</span>`).join('')}</div>` : ''}
+          </div>
+          <div class="board-votes">
+            <span class="vote-count">${row.votes}</span>
+            <span style="font-size:.75rem;color:var(--text-muted)">votes</span>
+          </div>
+        </div>`;
+    }).join('');
+  } catch {
+    board.innerHTML = '<p style="color:var(--text-muted)">Could not load leaderboard. Try again later.</p>';
+  }
+}
+
+loadLeaderboard();
+</script>
+
+<style>
+  .loading { text-align:center;color:var(--text-muted);padding:2rem; }
+  .board-row { display:flex;align-items:center;gap:1rem;padding:.8rem 1rem;border:1px solid var(--border);border-radius:var(--radius);margin-bottom:.5rem;background:var(--bg-card); }
+  .board-rank { font-size:1.1rem;font-weight:700;color:var(--text-muted);min-width:2rem; }
+  .board-info { flex:1; }
+  .board-name { font-weight:600;color:var(--text-primary); }
+  .board-tags { display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.3rem; }
+  .badge.tag { color:var(--accent);border-color:rgba(88,166,255,.3); }
+  .vote-count { font-size:1.2rem;font-weight:700;color:var(--accent-green); }
+</style>
