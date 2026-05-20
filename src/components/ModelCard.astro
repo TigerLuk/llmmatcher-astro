@@ -1,0 +1,63 @@
+---
+// src/components/ModelCard.astro
+import type { LLMModel } from '../data/models';
+import { affiliates } from '../data/affiliates';
+
+export interface Props {
+  model: LLMModel;
+  userVram: number;
+  rank?: number;
+}
+const { model, userVram, rank } = Astro.props;
+const fits = model.minVram <= userVram;
+const needsCloud = !fits;
+const runpodOnClick = `trackEvent('affiliate_click',{affiliate:'runpod',model:'${model.slug}'})`;
+---
+<div class={`model-card ${fits ? 'fits' : 'no-fit'}`}>
+  {rank && <span class="rank">#{rank}</span>}
+  <div class="card-header">
+    <h3>{model.name}</h3>
+    <span class="params">{model.params}</span>
+  </div>
+  <p class="desc">{model.description}</p>
+  <div class="meta">
+    <span class="badge">Min {model.minVram}GB VRAM</span>
+    {model.tags.map((t) => <span class="badge tag">{t}</span>)}
+  </div>
+  <div class="ollama">
+    <code>{model.ollamaCmd}</code>
+    <button class="copy-btn" data-cmd={model.ollamaCmd} onclick="navigator.clipboard.writeText(this.dataset.cmd);this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',1500)">Copy</button>
+  </div>
+  {needsCloud && (
+    <div class="cloud-cta">
+      <span>⚡ Your GPU may be too small — </span>
+      <a href={affiliates.runpod} target="_blank" rel="noopener noreferrer sponsored" onclick={runpodOnClick}>
+        Try on RunPod cloud →
+      </a>
+    </div>
+  )}
+</div>
+
+<style>
+  .model-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.2rem;
+    position: relative;
+    transition: border-color .2s;
+  }
+  .model-card.fits { border-left: 3px solid var(--accent-green); }
+  .model-card.no-fit { opacity: .7; border-left: 3px solid var(--border); }
+  .rank { position: absolute; top: 1rem; right: 1rem; font-size: .75rem; color: var(--text-muted); }
+  .card-header { display: flex; align-items: baseline; gap: .8rem; margin-bottom: .5rem; }
+  .card-header h3 { font-size: 1rem; margin: 0; }
+  .params { color: var(--text-muted); font-size: .8rem; }
+  .desc { color: var(--text-secondary); font-size: .85rem; margin-bottom: .8rem; }
+  .meta { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: .8rem; }
+  .badge.tag { color: var(--accent); border-color: var(--accent); }
+  .ollama { display: flex; align-items: center; gap: .5rem; background: var(--bg); border-radius: var(--radius); padding: .4rem .7rem; }
+  .ollama code { flex: 1; font-size: .8rem; color: var(--accent); }
+  .copy-btn { font-size: .75rem; padding: .2rem .6rem; background: var(--bg-hover); border: 1px solid var(--border); border-radius: 4px; color: var(--text-secondary); cursor: pointer; }
+  .cloud-cta { margin-top: .8rem; font-size: .82rem; color: var(--text-secondary); }
+</style>
