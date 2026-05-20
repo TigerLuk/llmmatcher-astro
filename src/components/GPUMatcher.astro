@@ -1,0 +1,246 @@
+---
+// src/components/GPUMatcher.astro
+import { gpus } from '../data/gpus';
+import { affiliates } from '../data/affiliates';
+---
+<div id="matcher">
+  <div class="matcher-hero">
+    <h1>⚡ Find the Best LLM for Your GPU</h1>
+    <p class="subtitle">Select your GPU — get instant model recommendations</p>
+  </div>
+
+  <div class="gpu-selector-section">
+    <div class="quick-picks">
+      {gpus
+        .filter((g) => ['rtx-4060', 'rtx-4070', 'rtx-4090', 'm3', 'm4-pro', 'cloud-a100'].includes(g.slug))
+        .map((g) => (
+          <button
+            class="gpu-quick-btn"
+            data-slug={g.slug}
+            data-vram={g.vram}
+            onclick="selectGPU(this.dataset.slug, parseInt(this.dataset.vram), this.textContent.trim())"
+          >
+            {g.name}
+          </button>
+        ))}
+    </div>
+    <div class="selector-row">
+      <select id="gpu-select" onchange="onGPUSelect(this)">
+        <option value="">-- Select your GPU --</option>
+        {['desktop', 'laptop', 'mac', 'cloud'].map((cat) => (
+          <optgroup label={cat.charAt(0).toUpperCase() + cat.slice(1)}>
+            {gpus
+              .filter((g) => g.category === cat)
+              .map((g) => (
+                <option value={g.slug} data-vram={g.vram}>
+                  {g.name} ({g.vram}GB)
+                </option>
+              ))}
+          </optgroup>
+        ))}
+      </select>
+      <button class="btn btn-secondary" onclick="autoDetect()">🔍 Auto-detect</button>
+      <a href="/quiz" class="btn btn-secondary">❓ Not sure? Take quiz</a>
+    </div>
+  </div>
+
+  <div id="results" style="display:none">
+    <div class="results-header">
+      <h2 id="results-title"></h2>
+      <div class="results-actions">
+        <button class="btn btn-secondary" onclick="shareResults()" id="share-btn">
+          📤 Share my results
+        </button>
+        <a
+          id="amazon-link"
+          href={affiliates.amazon_gpu}
+          target="_blank"
+          rel="noopener noreferrer sponsored"
+          onclick="trackEvent('affiliate_click',{affiliate:'amazon_gpu'})"
+        >
+          <button class="btn btn-secondary">🛒 Upgrade GPU</button>
+        </a>
+      </div>
+    </div>
+    <div id="results-grid" class="results-grid"></div>
+    <div id="badge-section" style="margin-top:1.5rem"></div>
+  </div>
+</div>
+
+<script>
+import { affiliates } from '../data/affiliates';
+import { getModelsForVram, type LLMModel } from '../data/models';
+import { gpus } from '../data/gpus';
+
+let currentGPUSlug = '';
+let currentGPUName = '';
+let currentVram = 0;
+
+function selectGPU(slug: string | undefined, vram: number, name: string) {
+  if (!slug || !Number.isFinite(vram)) return;
+  currentGPUSlug = slug;
+  currentVram = vram;
+  currentGPUName = name;
+  document.querySelectorAll('.gpu-quick-btn').forEach((b) => b.classList.remove('active'));
+  const btn = document.querySelector<HTMLElement>(`.gpu-quick-btn[data-slug="${slug}"]`);
+  btn?.classList.add('active');
+  const select = document.getElementById('gpu-select');
+  if (select instanceof HTMLSelectElement) select.value = slug;
+  renderResults(slug, vram, name);
+  (window as any).trackEvent?.('gpu_selected', { gpu: slug, vram });
+}
+
+function onGPUSelect(select: HTMLSelectElement) {
+  const opt = select.options[select.selectedIndex];
+  if (!(opt instanceof HTMLOptionElement) || !opt.value) return;
+  const vram = parseInt(opt.dataset.vram ?? '', 10);
+  if (!Number.isFinite(vram)) return;
+  selectGPU(opt.value, vram, opt.text.split(' (')[0]);
+}
+
+function autoDetect() {
+  const ram = (navigator as any).deviceMemory || 4;
+  const estimatedVram = navigator.userAgent.toLowerCase().includes('mac')
+    ? Math.max(ram / 2, 8)
+    : Math.max(ram / 2, 4);
+  const guess =
+    gpus.find((g) => Math.abs(g.vram - estimatedVram) < 3) ||
+    gpus.find((g) => g.vram <= estimatedVram) ||
+    gpus[gpus.length - 1];
+  const sel = document.getElementById('gpu-select');
+  if (sel instanceof HTMLSelectElement) sel.value = guess.slug;
+  selectGPU(guess.slug, guess.vram, guess.name);
+  (window as any).trackEvent?.('auto_detect_used', { estimated_vram: estimatedVram });
+}
+
+function renderResults(slug: string, vram: number, name: string) {
+  const matches = getModelsForVram(vram);
+  const resultsEl = document.getElementById('results');
+  const titleEl = document.getElementById('results-title');
+  const gridEl = document.getElementById('results-grid');
+  const badgeEl = document.getElementById('badge-section');
+  if (!resultsEl || !titleEl || !gridEl || !badgeEl) return;
+
+  titleEl.textContent = `Best LLMs for ${name} (${vram}GB VRAM)`;
+  gridEl.innerHTML = matches.length
+    ? matches.map((m, i) => modelCardHTML(m, vram, i + 1)).join('')
+    : '<p style="color:var(--text-secondary)">No models found for this VRAM. Consider cloud GPU.</p>';
+
+  badgeEl.innerHTML = matches.length > 0
+    ? `<button class="btn btn-secondary" onclick="generateBadge('${slug}','${escapeJS(name)}','${matches[0].slug}','${escapeJS(matches[0].name)}')">🏷️ Generate My AI Setup Badge</button>`
+    : '';
+
+  resultsEl.style.display = 'block';
+  (window as any).trackEvent?.('match_viewed', { gpu: slug, top_model: matches[0]?.slug });
+}
+
+function modelCardHTML(model: LLMModel, userVram: number, rank: number) {
+  const fits = model.minVram <= userVram;
+  const tags = model.tags.map((t) => `<span class="badge tag">${escapeHTML(t)}</span>`).join('');
+  const cmd = model.ollamaCmd.replace(/'/g, "\\'");
+  return `
+    <div class="model-card ${fits ? 'fits' : 'no-fit'}">
+      <span class="rank">#${rank}</span>
+      <div class="card-header"><h3>${escapeHTML(model.name)}</h3><span class="params">${escapeHTML(model.params)}</span></div>
+      <p class="desc">${escapeHTML(model.description)}</p>
+      <div class="meta"><span class="badge">Min ${model.minVram}GB</span>${tags}</div>
+      <div class="ollama"><code>${escapeHTML(model.ollamaCmd)}</code>
+        <button class="copy-btn" onclick="navigator.clipboard.writeText('${cmd}');this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',1500)">Copy</button>
+      </div>
+      ${!fits ? `<div class="cloud-cta">⚡ VRAM too small — <a href="${affiliates.runpod}" target="_blank" rel="noopener sponsored" onclick="trackEvent('affiliate_click',{affiliate:'runpod'})">Try RunPod cloud →</a></div>` : ''}
+      <button class="vote-btn" onclick="vote('${currentGPUSlug}','${model.slug}', this)">👍 I use this</button>
+    </div>`;
+}
+
+function escapeHTML(value: string) {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function escapeJS(value: string) {
+  return value.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+}
+
+function shareResults() {
+  const url = `${location.origin}/match/${currentGPUSlug}`;
+  if (navigator.share) {
+    navigator.share({ title: `Best LLMs for ${currentGPUName}`, url });
+  } else {
+    navigator.clipboard.writeText(url);
+    const btn = document.getElementById('share-btn');
+    if (btn) {
+      btn.textContent = '✅ Link copied!';
+      setTimeout(() => {
+        btn.textContent = '📤 Share my results';
+      }, 2000);
+    }
+  }
+  (window as any).trackEvent?.('share_clicked', { gpu: currentGPUSlug });
+}
+
+async function vote(gpuSlug: string, modelSlug: string, btn: HTMLButtonElement) {
+  btn.disabled = true;
+  btn.textContent = '✅ Voted!';
+  try {
+    await fetch('/api/vote', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ gpuSlug, modelSlug }),
+    });
+    (window as any).trackEvent?.('vote_submitted', { gpu: gpuSlug, model: modelSlug });
+  } catch {
+    btn.textContent = '👍 I use this';
+    btn.disabled = false;
+  }
+}
+
+function generateBadge(gpuSlug: string, gpuName: string, modelSlug: string, modelName: string) {
+  document.dispatchEvent(
+    new CustomEvent('generate-badge', {
+      detail: { gpuName, modelName },
+    }),
+  );
+  (window as any).trackEvent?.('badge_generated', { gpu: gpuSlug, model: modelSlug });
+}
+
+(window as any).selectGPU = selectGPU;
+(window as any).onGPUSelect = onGPUSelect;
+(window as any).autoDetect = autoDetect;
+(window as any).shareResults = shareResults;
+(window as any).vote = vote;
+(window as any).generateBadge = generateBadge;
+</script>
+
+<style>
+  #matcher { padding: 2rem 0; }
+  .matcher-hero { text-align: center; margin-bottom: 2rem; }
+  .matcher-hero h1 { font-size: clamp(1.6rem, 4vw, 2.4rem); margin-bottom: .5rem; }
+  .subtitle { color: var(--text-secondary); font-size: 1.1rem; }
+  .gpu-selector-section { margin-bottom: 2rem; }
+  .quick-picks { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1rem; justify-content: center; }
+  .gpu-quick-btn { padding: .4rem .9rem; border-radius: 20px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-secondary); cursor: pointer; font-size: .85rem; transition: all .15s; }
+  .gpu-quick-btn:hover, .gpu-quick-btn.active { border-color: var(--accent); color: var(--accent); background: var(--bg-hover); }
+  .selector-row { display: flex; gap: .8rem; flex-wrap: wrap; justify-content: center; }
+  #gpu-select { padding: .6rem 1rem; border-radius: var(--radius); border: 1px solid var(--border); background: var(--bg-card); color: var(--text-primary); font-size: .9rem; min-width: 220px; }
+  .results-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; }
+  .results-actions { display: flex; gap: .5rem; flex-wrap: wrap; }
+  .results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; }
+  .model-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.2rem; position: relative; }
+  .model-card.fits { border-left: 3px solid var(--accent-green); }
+  .model-card.no-fit { opacity: .65; }
+  .rank { position: absolute; top: .8rem; right: .8rem; font-size: .75rem; color: var(--text-muted); }
+  .card-header { display: flex; align-items: baseline; gap: .8rem; margin-bottom: .4rem; }
+  .card-header h3 { font-size: .95rem; margin: 0; }
+  .params { color: var(--text-muted); font-size: .78rem; }
+  .desc { color: var(--text-secondary); font-size: .82rem; margin-bottom: .7rem; }
+  .meta { display: flex; flex-wrap: wrap; gap: .35rem; margin-bottom: .7rem; }
+  .badge.tag { color: var(--accent); border-color: rgba(88,166,255,.3); }
+  .ollama { display: flex; align-items: center; gap: .5rem; background: var(--bg); border-radius: var(--radius); padding: .35rem .6rem; margin-bottom: .5rem; }
+  .ollama code { flex: 1; font-size: .78rem; color: var(--accent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .copy-btn, .vote-btn { font-size: .75rem; padding: .2rem .6rem; background: var(--bg-hover); border: 1px solid var(--border); border-radius: 4px; color: var(--text-secondary); cursor: pointer; }
+  .vote-btn { margin-top: .3rem; }
+  .cloud-cta { font-size: .8rem; color: var(--text-secondary); margin-bottom: .4rem; }
+</style>

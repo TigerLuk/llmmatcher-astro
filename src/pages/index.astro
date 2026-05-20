@@ -1,8 +1,30 @@
 ---
+// src/pages/index.astro
 import Base from '../layouts/Base.astro';
+import GPUMatcher from '../components/GPUMatcher.astro';
+import BadgeGenerator from '../components/BadgeGenerator.astro';
+import Newsletter from '../components/Newsletter.astro';
 ---
-<Base title="LLM Matcher — Find the Best AI Model for Your GPU (2026)">
-  <div class="container" style="padding-top:2rem">
-    <h1>Coming soon</h1>
+<Base
+  title="LLM Matcher — Find the Best AI Model for Your GPU (2026)"
+  description="Auto-detect your GPU VRAM and get instant recommendations for the best open-source LLMs to run locally. Supports Llama 4, DeepSeek, Qwen3, Mistral, Gemma, Phi-4 and more."
+>
+  <div class="container">
+    <GPUMatcher />
+    <BadgeGenerator />
+    <Newsletter />
   </div>
+
+  <script type="application/ld+json" is:inline>
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "LLM Matcher",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "Any",
+      "description": "Find the best open-source LLM for your GPU VRAM",
+      "url": "https://locallmmatcher.com",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+    }
+  </script>
 </Base>
