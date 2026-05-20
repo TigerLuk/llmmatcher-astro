@@ -1,13 +1,116 @@
 ---
-// src/components/BadgeGenerator.astro — placeholder until Task 15
+// src/components/BadgeGenerator.astro
 ---
-<div id="badge-generator-placeholder"></div>
+<div id="badge-gen-wrap" style="display:none;margin-top:1.5rem;text-align:center">
+  <canvas id="badge-canvas" width="600" height="200" style="border-radius:12px;max-width:100%"></canvas>
+  <div style="margin-top:.8rem;display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap">
+    <button class="btn btn-primary" id="badge-dl">⬇️ Download Badge</button>
+    <button class="btn btn-secondary" id="badge-tweet">🐦 Share on X</button>
+  </div>
+</div>
 
 <script>
-// Full implementation in Task 15
-document.addEventListener('generate-badge', (e: any) => {
-  const { gpuName, modelName } = e.detail;
-  console.log('Badge generation requested:', gpuName, modelName);
-  // TODO: Full Canvas implementation in Task 15
+let badgeData = { gpuName: '', modelName: '' };
+
+document.addEventListener('generate-badge', (e: Event) => {
+  const detail = (e as CustomEvent<{ gpuName: string; modelName: string }>).detail;
+  badgeData = detail;
+  renderBadge(badgeData.gpuName, badgeData.modelName);
+  const wrap = document.getElementById('badge-gen-wrap');
+  if (wrap) {
+    wrap.style.display = 'block';
+    wrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+});
+
+function renderBadge(gpuName: string, modelName: string) {
+  const canvas = document.getElementById('badge-canvas') as HTMLCanvasElement | null;
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+
+  // Background
+  ctx.fillStyle = '#0f1117';
+  ctx.beginPath();
+  ctx.roundRect(0, 0, 600, 200, 16);
+  ctx.fill();
+
+  // Border
+  ctx.strokeStyle = '#30363d';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.roundRect(0, 0, 600, 200, 16);
+  ctx.stroke();
+
+  // Left accent bar
+  ctx.fillStyle = '#238636';
+  ctx.fillRect(0, 0, 4, 200);
+
+  // Logo text
+  ctx.fillStyle = '#e6edf3';
+  ctx.font = 'bold 18px -apple-system, system-ui, sans-serif';
+  ctx.fillText('⚡ LLM Matcher', 30, 42);
+
+  // Divider
+  ctx.strokeStyle = '#30363d';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(30, 56);
+  ctx.lineTo(570, 56);
+  ctx.stroke();
+
+  // GPU section
+  ctx.fillStyle = '#8b949e';
+  ctx.font = '14px -apple-system, system-ui, sans-serif';
+  ctx.fillText('MY GPU', 30, 85);
+
+  ctx.fillStyle = '#58a6ff';
+  ctx.font = 'bold 28px -apple-system, system-ui, sans-serif';
+  ctx.fillText(gpuName.slice(0, 20), 30, 118);
+
+  // Separator
+  ctx.fillStyle = '#30363d';
+  ctx.font = 'bold 36px -apple-system, system-ui, sans-serif';
+  ctx.fillText('×', 290, 118);
+
+  // Model section
+  ctx.fillStyle = '#8b949e';
+  ctx.font = '14px -apple-system, system-ui, sans-serif';
+  ctx.fillText('TOP MODEL', 330, 85);
+
+  ctx.fillStyle = '#e6edf3';
+  ctx.font = 'bold 22px -apple-system, system-ui, sans-serif';
+  const maxW = 230;
+  let modelText = modelName;
+  while (ctx.measureText(modelText).width > maxW && modelText.length > 5) {
+    modelText = modelText.slice(0, -1);
+  }
+  ctx.fillText(modelText, 330, 118);
+
+  // Footer
+  ctx.fillStyle = '#6e7681';
+  ctx.font = '13px -apple-system, system-ui, sans-serif';
+  ctx.fillText('locallmmatcher.com', 30, 168);
+
+  ctx.fillStyle = '#238636';
+  ctx.font = 'bold 13px -apple-system, system-ui, sans-serif';
+  ctx.fillText('✓ Locally Verified', 460, 168);
+}
+
+document.getElementById('badge-dl')?.addEventListener('click', () => {
+  const canvas = document.getElementById('badge-canvas') as HTMLCanvasElement | null;
+  if (!canvas) return;
+  const a = document.createElement('a');
+  a.download = `llm-setup-${badgeData.gpuName.toLowerCase().replace(/\s+/g, '-')}.png`;
+  a.href = canvas.toDataURL('image/png');
+  a.click();
+  (window as any).trackEvent?.('badge_downloaded', { gpu: badgeData.gpuName });
+});
+
+document.getElementById('badge-tweet')?.addEventListener('click', () => {
+  const text = encodeURIComponent(`Running ${badgeData.modelName} on my ${badgeData.gpuName} 🚀 Find your best LLM at`);
+  const url = encodeURIComponent('https://locallmmatcher.com');
+  window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, '_blank');
+  (window as any).trackEvent?.('badge_shared_twitter', { gpu: badgeData.gpuName });
 });
 </script>
