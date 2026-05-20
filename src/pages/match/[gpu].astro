@@ -1,0 +1,68 @@
+---
+// src/pages/match/[gpu].astro
+import Base from '../../layouts/Base.astro';
+import ModelCard from '../../components/ModelCard.astro';
+import { gpus, getGPUBySlug } from '../../data/gpus';
+import { getModelsForVram } from '../../data/models';
+import { affiliates } from '../../data/affiliates';
+
+export async function getStaticPaths() {
+  return gpus.map((gpu) => ({ params: { gpu: gpu.slug } }));
+}
+
+const { gpu: gpuSlug } = Astro.params;
+const gpu = getGPUBySlug(gpuSlug!);
+if (!gpu) {
+  return Astro.redirect('/');
+}
+
+const matches = getModelsForVram(gpu.vram);
+const title = `Best LLMs for ${gpu.name} (${gpu.vram}GB VRAM) — 2026`;
+const description = `Top ${matches.length} open-source AI models you can run locally on ${gpu.name}. Includes ollama commands, VRAM requirements, and setup guides.`;
+---
+<Base title={title} description={description}>
+  <div class="container" style="padding-top:2rem">
+    <div class="page-header">
+      <a href="/" style="color:var(--text-muted);font-size:.85rem">← Back to Matcher</a>
+      <h1>{title}</h1>
+      <p class="subtitle">{matches.length} models matched · Share this page with others who have {gpu.name}</p>
+      <div style="display:flex;gap:.8rem;flex-wrap:wrap;margin-top:1rem">
+        <button class="btn btn-secondary" onclick="navigator.clipboard.writeText(location.href);this.textContent='✅ Copied!';setTimeout(()=>this.textContent='📤 Copy link',1500)">
+          📤 Copy link
+        </button>
+        {gpu.amazonLink && (
+          <a
+            href={gpu.amazonLink}
+            class="btn btn-secondary"
+            target="_blank"
+            rel="noopener noreferrer sponsored"
+            onclick="trackEvent('affiliate_click',{affiliate:'amazon_gpu',context:'match_page'})"
+          >
+            🛒 Buy {gpu.name} on Amazon
+          </a>
+        )}
+      </div>
+    </div>
+
+    <div class="results-grid" style="margin-top:2rem">
+      {matches.map((model, i) => (
+        <ModelCard model={model} userVram={gpu.vram} rank={i + 1} />
+      ))}
+    </div>
+
+    {matches.length === 0 && (
+      <div class="card" style="text-align:center;padding:3rem">
+        <p>No models fit {gpu.vram}GB VRAM. Consider cloud GPU:</p>
+        <a href={affiliates.runpod} class="btn btn-primary" style="margin-top:1rem" target="_blank" rel="noopener noreferrer sponsored">
+          Try RunPod Cloud GPU →
+        </a>
+      </div>
+    )}
+  </div>
+  <style>
+    .page-header { margin-bottom: 1rem; }
+    .page-header h1 { font-size: clamp(1.3rem,3vw,2rem); margin: .5rem 0; }
+    .subtitle { color: var(--text-secondary); }
+    .results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; }
+  </style>
+</Base>
