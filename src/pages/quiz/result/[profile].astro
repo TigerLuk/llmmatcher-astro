@@ -1,0 +1,68 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { profiles, getProfileBySlug } from '../../../data/quizProfiles';
+import { getModelBySlug } from '../../../data/models';
+import { affiliates } from '../../../data/affiliates';
+
+export async function getStaticPaths() {
+  return profiles.map(p => ({ params: { profile: p.slug } }));
+}
+const { profile: slug } = Astro.params;
+const profile = getProfileBySlug(slug!);
+if (!profile) return Astro.redirect('/quiz');
+const topModels = profile.recommendedModels.map(s => getModelBySlug(s)).filter((m): m is NonNullable<typeof m> => !!m);
+---
+<Base
+  title={`You're ${profile.title} — LLM Matcher Quiz Result`}
+  description={profile.description}
+>
+  <div class="container" style="max-width:650px;padding-top:3rem;text-align:center">
+    <div class="result-card card">
+      <div class="emoji">{profile.emoji}</div>
+      <h1>You're {profile.title}</h1>
+      <p style="color:var(--text-secondary);margin:1rem 0 1.5rem">{profile.description}</p>
+
+      <h2 style="font-size:1rem;margin-bottom:1rem;color:var(--text-muted)">Top models for you</h2>
+      <div style="display:flex;flex-direction:column;gap:.7rem;text-align:left;margin-bottom:1.5rem">
+        {topModels.map((m, i) => (
+          <a href={`/models/${m.slug}`} class="model-row card">
+            <span class="rank-sm">#{i+1}</span>
+            <div>
+              <strong>{m.name}</strong>
+              <div style="font-size:.82rem;color:var(--text-secondary)">{m.description}</div>
+            </div>
+            <code style="font-size:.75rem;color:var(--accent)">{m.ollamaCmd}</code>
+          </a>
+        ))}
+      </div>
+
+      <div style="display:flex;gap:.8rem;flex-wrap:wrap;justify-content:center;margin-bottom:1.5rem">
+        <button class="btn btn-secondary" id="share-quiz-btn"
+          onclick={`navigator.clipboard.writeText(location.href);this.textContent='✅ Link copied!';setTimeout(()=>this.textContent='📤 Share result',1500);trackEvent('quiz_result_shared',{profile:'${slug}'})`}>
+          📤 Share result
+        </button>
+        <a href="/" class="btn btn-secondary">🔧 Match my GPU →</a>
+      </div>
+
+      <a href={affiliates[profile.affiliateKey]} class="btn btn-primary" target="_blank"
+         rel="noopener noreferrer sponsored"
+         onclick={`trackEvent('affiliate_click',{affiliate:'${profile.affiliateKey}',context:'quiz_result'})`}>
+        {profile.affiliateCTA}
+      </a>
+    </div>
+
+    <div style="margin-top:1.5rem">
+      <button class="btn btn-secondary"
+        onclick={`document.dispatchEvent(new CustomEvent('generate-badge',{detail:{gpuName:'${profile.title.replace(/'/g,"\\'")}',modelName:'${(topModels[0]?.name || '').replace(/'/g,"\\'")}' }}));trackEvent('badge_generated',{context:'quiz'})`}>
+        🏷️ Generate My AI Badge
+      </button>
+    </div>
+  </div>
+  <style>
+    .result-card { padding:2rem; }
+    .emoji { font-size:3rem;margin-bottom:1rem; }
+    .model-row { display:flex;align-items:center;gap:1rem;text-decoration:none;padding:.8rem;transition:border-color .15s; }
+    .model-row:hover { border-color:var(--accent); }
+    .rank-sm { font-weight:700;color:var(--text-muted);min-width:1.5rem; }
+  </style>
+</Base>

@@ -1,0 +1,73 @@
+---
+import Base from '../../layouts/Base.astro';
+---
+<Base title="What's the Best AI Model For You? — LLM Matcher Quiz"
+  description="Not sure which LLM to run? Answer 3 quick questions and get a personalized recommendation.">
+  <div class="container" style="max-width:600px;padding-top:3rem;text-align:center">
+    <div id="quiz-app">
+      <div id="q0" class="quiz-screen">
+        <p class="q-label">Step 1 of 3</p>
+        <h1>What do you mainly want AI for?</h1>
+        <div class="options">
+          <button class="opt-btn" onclick="answer('useCase','coding')">💻 Coding</button>
+          <button class="opt-btn" onclick="answer('useCase','creative')">✍️ Writing & Creative</button>
+          <button class="opt-btn" onclick="answer('useCase','chat')">💬 Chat & Q&A</button>
+          <button class="opt-btn" onclick="answer('useCase','research')">🔬 Research & Analysis</button>
+        </div>
+      </div>
+      <div id="q1" class="quiz-screen" style="display:none">
+        <p class="q-label">Step 2 of 3</p>
+        <h1>What hardware do you have?</h1>
+        <div class="options">
+          <button class="opt-btn" onclick="answer('budget','gaming-pc')">🖥️ Gaming desktop / workstation</button>
+          <button class="opt-btn" onclick="answer('budget','laptop')">💻 Laptop</button>
+          <button class="opt-btn" onclick="answer('budget','cloud')">☁️ I want to use cloud GPU</button>
+          <button class="opt-btn" onclick="answer('budget','unsure')">🤷 Not sure</button>
+        </div>
+      </div>
+      <div id="q2" class="quiz-screen" style="display:none">
+        <p class="q-label">Step 3 of 3</p>
+        <h1>How comfortable are you with tech?</h1>
+        <div class="options">
+          <button class="opt-btn" onclick="answer('techLevel','beginner')">🌱 Total beginner</button>
+          <button class="opt-btn" onclick="answer('techLevel','intermediate')">🔧 Comfortable with terminals</button>
+          <button class="opt-btn" onclick="answer('techLevel','developer')">⚡ Developer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</Base>
+
+<script>
+import { getProfileFromAnswers } from '../../data/quizProfiles';
+
+const answers: Record<string, string> = {};
+const flow = ['useCase', 'budget', 'techLevel'];
+let step = 0;
+
+function answer(key: string, value: string) {
+  answers[key] = value;
+  step++;
+  if (step < flow.length) {
+    const prev = document.getElementById(`q${step - 1}`);
+    const next = document.getElementById(`q${step}`);
+    if (prev) prev.style.display = 'none';
+    if (next) next.style.display = 'block';
+  } else {
+    const profile = getProfileFromAnswers(answers.useCase, answers.budget, answers.techLevel);
+    (window as any).trackEvent?.('quiz_completed', { profile });
+    location.href = `/quiz/result/${profile}`;
+  }
+}
+
+(window as any).answer = answer;
+(window as any).trackEvent?.('quiz_started');
+</script>
+
+<style>
+  .q-label { color:var(--text-muted);font-size:.85rem;margin-bottom:.5rem; }
+  h1 { font-size:clamp(1.3rem,3vw,1.8rem);margin-bottom:1.5rem; }
+  .options { display:flex;flex-direction:column;gap:.7rem; }
+  .opt-btn { padding:.9rem 1.5rem;border-radius:var(--radius-lg);border:1px solid var(--border);background:var(--bg-card);color:var(--text-primary);font-size:1rem;cursor:pointer;text-align:left;transition:all .15s; }
+  .opt-btn:hover { border-color:var(--accent);background:var(--bg-hover); }
+</style>
