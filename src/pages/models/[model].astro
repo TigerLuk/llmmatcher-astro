@@ -1,0 +1,56 @@
+---
+import Base from '../../layouts/Base.astro';
+import { models, getModelBySlug } from '../../data/models';
+import { affiliates } from '../../data/affiliates';
+
+export async function getStaticPaths() {
+  return models.map((m) => ({ params: { model: m.slug } }));
+}
+
+const { model: slug } = Astro.params;
+const model = getModelBySlug(slug!);
+if (!model) return Astro.redirect('/models');
+---
+<Base
+  title={`${model.name} — Local LLM Guide, VRAM & Setup (2026)`}
+  description={`How to run ${model.name} locally. Minimum ${model.minVram}GB VRAM needed. Ollama command: ${model.ollamaCmd}. ${model.description}`}
+>
+  <div class="container" style="padding-top:2rem;max-width:800px">
+    <a href="/models" style="color:var(--text-muted);font-size:.85rem">← All Models</a>
+    <h1 style="margin:.5rem 0">{model.name}</h1>
+    <div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1.5rem">
+      <span class="badge">{model.params}</span>
+      <span class="badge">Min {model.minVram}GB VRAM</span>
+      <span class="badge">Full {model.fullVram}GB VRAM</span>
+      {model.tags.map((t) => <span class="badge tag">{t}</span>)}
+    </div>
+    <p style="font-size:1.05rem;margin-bottom:2rem">{model.description}</p>
+
+    <div class="card" style="margin-bottom:1.5rem">
+      <h2 style="font-size:1rem;margin-bottom:.8rem">Run with Ollama</h2>
+      <div class="ollama-block">
+        <code>{model.ollamaCmd}</code>
+        <button onclick={`navigator.clipboard.writeText('${model.ollamaCmd}');this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',1500)`}>Copy</button>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:1.5rem">
+      <h2 style="font-size:1rem;margin-bottom:.8rem">Which GPUs can run this?</h2>
+      <a href={`/?model=${model.slug}`} class="btn btn-primary">Check my GPU →</a>
+    </div>
+
+    <div class="affiliate-block">
+      <a href={affiliates.pluralsight} target="_blank" rel="noopener noreferrer sponsored"
+         class="btn btn-secondary" onclick={`trackEvent('affiliate_click',{affiliate:'pluralsight',model:'${model.slug}'})`}>
+        📚 Learn to fine-tune {model.name} — Pluralsight
+      </a>
+    </div>
+  </div>
+  <style>
+    .ollama-block { display:flex;align-items:center;gap:.5rem;background:var(--bg);border-radius:var(--radius);padding:.5rem .8rem; }
+    .ollama-block code { flex:1;font-size:.85rem;color:var(--accent); }
+    .ollama-block button { font-size:.75rem;padding:.2rem .6rem;background:var(--bg-hover);border:1px solid var(--border);border-radius:4px;color:var(--text-secondary);cursor:pointer; }
+    .affiliate-block { margin-top:2rem; }
+    .badge.tag { color:var(--accent);border-color:rgba(88,166,255,.3); }
+  </style>
+</Base>

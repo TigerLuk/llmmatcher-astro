@@ -1,0 +1,31 @@
+---
+import Base from '../../layouts/Base.astro';
+import { models } from '../../data/models';
+---
+<Base title="LLM Model Database — All Local AI Models (2026)"
+  description="Browse all open-source LLMs you can run locally. Filter by VRAM, use case, and model family.">
+  <div class="container" style="padding-top:2rem">
+    <h1>LLM Model Database</h1>
+    <p style="color:var(--text-secondary);margin-bottom:2rem">{models.length} models · updated 2026</p>
+    <div class="models-grid">
+      {models.map((m) => (
+        <a href={`/models/${m.slug}`} class="model-preview card">
+          <div style="display:flex;justify-content:space-between;align-items:baseline">
+            <strong>{m.name}</strong>
+            <span class="badge">{m.minVram}GB+</span>
+          </div>
+          <p style="color:var(--text-secondary);font-size:.82rem;margin-top:.4rem">{m.description}</p>
+          <div style="display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.6rem">
+            {m.tags.map((t) => <span class="badge tag">{t}</span>)}
+          </div>
+        </a>
+      ))}
+    </div>
+  </div>
+  <style>
+    .models-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px,1fr)); gap: 1rem; }
+    .model-preview { text-decoration: none; display: block; transition: border-color .15s; }
+    .model-preview:hover { border-color: var(--accent); }
+    .badge.tag { color: var(--accent); border-color: rgba(88,166,255,.3); }
+  </style>
+</Base>
