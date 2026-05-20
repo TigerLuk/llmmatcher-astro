@@ -1,6 +1,51 @@
 ---
-// src/components/Newsletter.astro — placeholder until Task 14
+// src/components/Newsletter.astro
 ---
-<div id="newsletter-placeholder" style="margin-top:2rem;padding:1.5rem;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);text-align:center">
-  <p style="color:var(--text-secondary);font-size:.9rem">📧 Newsletter signup coming soon</p>
+<div class="newsletter-widget card">
+  <h3>📬 New LLM drops, guides & deals</h3>
+  <p>No spam. Unsubscribe anytime.</p>
+  <form id="nl-form">
+    <input type="email" id="nl-email" placeholder="your@email.com" required />
+    <button type="submit" class="btn btn-primary">Subscribe</button>
+  </form>
+  <p id="nl-msg" style="display:none"></p>
 </div>
+
+<script>
+const form = document.getElementById('nl-form') as HTMLFormElement | null;
+form?.addEventListener('submit', async (e: Event) => {
+  e.preventDefault();
+  const email = (document.getElementById('nl-email') as HTMLInputElement)?.value;
+  const msg = document.getElementById('nl-msg');
+  try {
+    const res = await fetch('/api/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+    if (msg) {
+      msg.style.display = 'block';
+      msg.textContent = res.ok ? '✅ Subscribed! Welcome aboard.' : '❌ Something went wrong. Try again.';
+      msg.style.color = res.ok ? 'var(--accent-green)' : '#f85149';
+    }
+    if (res.ok && form) {
+      form.style.display = 'none';
+      (window as any).trackEvent?.('newsletter_signup');
+    }
+  } catch {
+    if (msg) {
+      msg.style.display = 'block';
+      msg.textContent = '❌ Network error. Try again.';
+    }
+  }
+});
+</script>
+
+<style>
+  .newsletter-widget { text-align:center;padding:2rem;margin-top:2rem; }
+  .newsletter-widget h3 { margin-bottom:.4rem; }
+  .newsletter-widget p { color:var(--text-secondary);font-size:.85rem;margin-bottom:1rem; }
+  #nl-form { display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap; }
+  #nl-form input { padding:.6rem 1rem;border-radius:var(--radius);border:1px solid var(--border);background:var(--bg);color:var(--text-primary);font-size:.9rem;min-width:220px; }
+  #nl-msg { margin-top:.8rem;font-size:.88rem; }
+</style>
