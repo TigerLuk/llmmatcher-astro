@@ -1,0 +1,23 @@
+backend:
+  name: github
+  repo: YOUR_GITHUB_USERNAME/llmmatcher-astro
+  branch: main
+  base_url: https://locallmmatcher.com
+  auth_endpoint: /api/auth
+
+media_folder: public/images/blog
+public_folder: /images/blog
+
+collections:
+  - name: blog
+    label: Blog Posts
+    folder: src/content/blog
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: Title, name: title, widget: string }
+      - { label: Date, name: date, widget: datetime }
+      - { label: Description, name: description, widget: string }
+      - { label: Tags, name: tags, widget: list, default: [] }
+      - { label: Draft, name: draft, widget: boolean, default: false }
+      - { label: Body, name: body, widget: markdown }

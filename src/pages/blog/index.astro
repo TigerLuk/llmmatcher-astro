@@ -1,0 +1,34 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('blog', (p) => !p.data.draft))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+---
+<Base title="LLM Matcher Blog — Local AI Guides & Model Reviews"
+  description="Step-by-step guides for running LLMs locally, GPU reviews, and model comparisons.">
+  <div class="container" style="padding-top:2rem">
+    <h1>Blog</h1>
+    <p style="color:var(--text-secondary);margin-bottom:2rem">Guides, reviews and news for local AI</p>
+    <div class="posts-list">
+      {posts.map((p) => (
+        <a href={`/blog/${p.id.replace(/\.(md|mdx)$/, '')}`} class="post-card card">
+          <div class="post-meta">
+            <span style="color:var(--text-muted);font-size:.82rem">{p.data.date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
+            <div>{p.data.tags.map((t) => <span class="badge" style="margin-left:.4rem">{t}</span>)}</div>
+          </div>
+          <h2>{p.data.title}</h2>
+          <p>{p.data.description}</p>
+        </a>
+      ))}
+    </div>
+  </div>
+  <style>
+    .posts-list { display:grid;gap:1rem; }
+    .post-card { display:block;text-decoration:none;transition:border-color .15s; }
+    .post-card:hover { border-color:var(--accent); }
+    .post-card h2 { font-size:1.1rem;margin:.5rem 0; }
+    .post-card p { color:var(--text-secondary);font-size:.88rem; }
+    .post-meta { display:flex;justify-content:space-between;align-items:center;margin-bottom:.3rem; }
+  </style>
+</Base>

@@ -6,4 +6,7 @@ export default defineConfig({
   site: 'https://locallmmatcher.com',
   integrations: [sitemap(), mdx()],
   output: 'static',
+  legacy: {
+    collectionsBackwardsCompat: true,
+  },
 });

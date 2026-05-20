@@ -1,0 +1,127 @@
+---
+// src/layouts/BlogPost.astro
+import Base from './Base.astro';
+import { affiliates, tagAffiliates } from '../data/affiliates';
+
+export interface Props {
+  title: string;
+  description: string;
+  date: Date;
+  tags: string[];
+}
+const { title, description, date, tags } = Astro.props;
+const dateStr = date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+const ctaMap = new Map<string, { label: string; cta: string; url: string }>();
+tags.forEach((tag) => {
+  (tagAffiliates[tag] || []).forEach(({ key, label, cta }) => {
+    if (!ctaMap.has(key)) {
+      ctaMap.set(key, { label, cta, url: affiliates[key] });
+    }
+  });
+});
+
+if (!ctaMap.has('runpod')) {
+  ctaMap.set('runpod', { label: 'Run models in the cloud', cta: 'Try RunPod →', url: affiliates.runpod });
+}
+const ctaList = [...ctaMap.values()];
+---
+<Base title={`${title} — LLM Matcher`} description={description}>
+  <div class="container" style="max-width:780px;padding-top:2rem">
+    <a href="/blog" style="color:var(--text-muted);font-size:.85rem">← All Posts</a>
+    <h1 style="margin:.6rem 0 .4rem">{title}</h1>
+    <div style="color:var(--text-muted);font-size:.85rem;margin-bottom:2rem">
+      {dateStr} ·
+      {tags.map((t) => <span class="badge" style="margin-right:.3rem">{t}</span>)}
+    </div>
+
+    <div class="post-body">
+      <slot />
+    </div>
+
+    {ctaList.length > 0 && (
+      <div class="affiliate-section">
+        <h3>Recommended Resources</h3>
+        <div class="aff-grid">
+          {ctaList.map((a) => (
+            <a href={a.url} class="aff-card" target="_blank" rel="noopener noreferrer sponsored"
+               onclick={`trackEvent('affiliate_click',{affiliate:'${a.label}',context:'blog_post'})`}>
+              <strong>{a.label}</strong>
+              <span>{a.cta}</span>
+            </a>
+          ))}
+        </div>
+      </div>
+    )}
+
+    <div class="newsletter-block card" style="margin-top:2rem;text-align:center">
+      <h3 style="margin-bottom:.5rem">Stay updated on new LLM releases</h3>
+      <p style="color:var(--text-secondary);font-size:.85rem;margin-bottom:1rem">Get notified when new models and guides drop.</p>
+      <form id="blog-nl-form" style="display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap">
+        <input type="email" id="blog-nl-email" placeholder="your@email.com" required
+          style="padding:.6rem 1rem;border-radius:var(--radius);border:1px solid var(--border);background:var(--bg);color:var(--text-primary);font-size:.9rem" />
+        <button type="submit" class="btn btn-primary">Subscribe</button>
+      </form>
+      <p id="blog-nl-msg" style="display:none;margin-top:.8rem;font-size:.88rem"></p>
+    </div>
+  </div>
+
+  <script type="application/ld+json" is:inline set:html={JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: title,
+    description,
+    datePublished: date.toISOString(),
+    author: { '@type': 'Organization', name: 'LLM Matcher' },
+    publisher: { '@type': 'Organization', name: 'LLM Matcher', url: 'https://locallmmatcher.com' },
+  })} />
+
+  <script>
+    const form = document.getElementById('blog-nl-form') as HTMLFormElement | null;
+    form?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = (document.getElementById('blog-nl-email') as HTMLInputElement | null)?.value;
+      const msg = document.getElementById('blog-nl-msg') as HTMLParagraphElement | null;
+      try {
+        const res = await fetch('/api/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email }),
+        });
+        if (msg) {
+          msg.style.display = 'block';
+          msg.textContent = res.ok ? '✅ Subscribed! Welcome aboard.' : '❌ Something went wrong.';
+          msg.style.color = res.ok ? 'var(--accent-green)' : '#f85149';
+        }
+        if (res.ok && form) {
+          form.style.display = 'none';
+          (window as Window & typeof globalThis & { trackEvent?: (name: string, params?: Record<string, string>) => void }).trackEvent?.('newsletter_signup', { source: 'blog' });
+        }
+      } catch {
+        if (msg) {
+          msg.style.display = 'block';
+          msg.textContent = '❌ Network error.';
+        }
+      }
+    });
+  </script>
+
+  <style>
+    .post-body { line-height: 1.8; }
+    .post-body h2 { margin: 1.8rem 0 .8rem; font-size: 1.3rem; }
+    .post-body h3 { margin: 1.4rem 0 .6rem; font-size: 1.1rem; }
+    .post-body p { margin-bottom: 1rem; color: var(--text-secondary); }
+    .post-body code { background: var(--bg-card); padding: .15rem .4rem; border-radius: 4px; font-size: .88em; color: var(--accent); }
+    .post-body pre { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; overflow-x: auto; margin-bottom: 1rem; }
+    .post-body pre code { background: none; padding: 0; }
+    .post-body a { color: var(--accent); }
+    .post-body ul, .post-body ol { padding-left: 1.5rem; margin-bottom: 1rem; color: var(--text-secondary); }
+    .affiliate-section { margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--border); }
+    .affiliate-section h3 { margin-bottom: 1rem; font-size: 1rem; color: var(--text-muted); }
+    .aff-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); gap: .8rem; }
+    .aff-card { display: flex; flex-direction: column; gap: .3rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: .8rem 1rem; text-decoration: none; transition: border-color .15s; }
+    .aff-card:hover { border-color: var(--accent); text-decoration: none; }
+    .aff-card strong { color: var(--text-primary); font-size: .9rem; }
+    .aff-card span { color: var(--accent); font-size: .82rem; }
+  </style>
+</Base>
