@@ -1,0 +1,11 @@
+name: "Mistral Small 3.1"
+slug: "mistral-small-3.1"
+family: "Mistral"
+minVram: 14
+fullVram: 48
+params: "24B"
+tags: ["chat", "coding", "reasoning"]
+ollamaCmd: "ollama run mistral-small3.1"
+description: "Mistral Small 3.1 — high-quality instruction model for 16GB+ setups."
+affiliateTier: "high"
+tpsRtx4090: 52

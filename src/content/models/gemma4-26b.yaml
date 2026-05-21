@@ -1,0 +1,11 @@
+name: "Gemma 4 26B"
+slug: "gemma4-26b"
+family: "Gemma 4"
+minVram: 18
+fullVram: 52
+params: "26B MoE (4B active)"
+tags: ["chat", "coding", "multimodal", "research"]
+ollamaCmd: "ollama run gemma4:26b"
+description: "Google's Gemma 4 26B multimodal MoE model. The Ollama q4 tag is 18GB, the bf16 variant is 52GB, and it supports text + image input with a 256K context window."
+affiliateTier: "high"
+tpsRtx4090: 84

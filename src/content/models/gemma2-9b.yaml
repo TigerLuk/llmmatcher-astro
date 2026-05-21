@@ -1,0 +1,11 @@
+name: "Gemma 2 9B"
+slug: "gemma2-9b"
+family: "Gemma 2"
+minVram: 6
+fullVram: 18
+params: "9B"
+tags: ["chat", "research"]
+ollamaCmd: "ollama run gemma2:9b"
+description: "Google Gemma 2 9B — highly capable conversation and analysis model."
+affiliateTier: "mid"
+tpsRtx4090: 108

@@ -1,0 +1,11 @@
+name: "Qwen 2.5 14B"
+slug: "qwen2.5-14b"
+family: "Qwen 2.5"
+minVram: 9
+fullVram: 28
+params: "14B"
+tags: ["chat", "coding", "multilingual"]
+ollamaCmd: "ollama run qwen2.5:14b"
+description: "Qwen 2.5 14B delivers GPT-3.5-level quality on 12GB consumer GPUs."
+affiliateTier: "mid"
+tpsRtx4090: 78

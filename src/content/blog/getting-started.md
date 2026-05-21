@@ -1,34 +1,45 @@
 ---
-title: "How to Run Llama 4 Locally on Your GPU (2026 Guide)"
-date: 2026-05-20
-description: "Step-by-step guide to running Meta's Llama 4 locally using Ollama. Works on RTX 4060 and above."
-tags: ["gpu", "tutorial", "llama"]
+title: "Getting Started with Local LLMs in 2026"
+date: 2026-05-21
+description: "A practical starter guide to choosing a local model, installing Ollama, and matching models to your GPU in 2026."
+tags: ["gpu", "tutorial", "ollama"]
 ---
 
-## What You Need
+## Start with your VRAM, not the biggest model name
 
-- A GPU with at least **8GB VRAM** (RTX 4060, RTX 3070, or better)
-- [Ollama](https://ollama.ai) installed on your system
-- 20GB free disk space
+The fastest way to have a good first experience with local AI is to pick a model that actually fits your hardware.
+
+- **4GB class GPUs:** start with `phi4-mini`
+- **6-8GB GPUs:** start with `qwen3:8b` or `mistral`
+- **10-16GB GPUs:** try `phi4`, `gemma3:12b`, or `deepseek-r1`
+- **20GB+ GPUs:** step up to `qwen3:30b` or `gemma3:27b`
+
+If you pick a model that is too large, generation becomes slow or may fail to load entirely.
 
 ## Install Ollama
 
-Download and install Ollama from [ollama.ai](https://ollama.ai). It runs on Windows, macOS, and Linux.
+Download Ollama from [ollama.com](https://ollama.com) and complete the installer for Windows, macOS, or Linux.
 
-## Run Llama 4 Scout
+## Good first commands
 
-Open your terminal and run:
+Open a terminal and run one of these:
 
 ```bash
-ollama run llama4:scout
+ollama run phi4-mini
+ollama run qwen3:8b
+ollama run mistral
 ```
 
-Ollama will download the model (~5GB) and start an interactive chat session.
+Ollama will download the selected model and open a local chat session.
 
-## Performance Tips
+## When to use the matcher
 
-- Close other GPU-intensive apps before running
-- Use q4 quantization (default) for best VRAM efficiency
-- For coding tasks, try `ollama run qwen3:8b` instead — it's faster for code
+Use LLM Matcher when you want a faster answer to questions like:
+
+- Which models fit my exact GPU?
+- What should I run on 8GB versus 12GB?
+- When should I switch to a cloud GPU?
+
+Start on the homepage, choose your GPU, and the site will rank practical options for your VRAM.
 
 [Check which models fit your GPU →](https://locallmmatcher.com)

@@ -1,7 +1,21 @@
 ---
-// src/components/GPUMatcher.astro
-import { gpus } from '../data/gpus';
+import { getCollection } from 'astro:content';
+import type { GPU } from '../data/gpus';
+import type { LLMModel } from '../data/models';
 import { affiliates } from '../data/affiliates';
+
+const gpuEntries = await getCollection('gpus');
+const gpus: GPU[] = gpuEntries.map(({ data }) => data as GPU);
+const modelEntries = await getCollection('models');
+const models: LLMModel[] = modelEntries.map(({ data }) => data as LLMModel);
+const matcherData = {
+  gpus,
+  models,
+  affiliateUrls: {
+    amazonGpu: affiliates.amazon_gpu,
+    runpod: affiliates.runpod,
+  },
+};
 ---
 <div id="matcher">
   <div class="matcher-hero">
@@ -12,28 +26,28 @@ import { affiliates } from '../data/affiliates';
   <div class="gpu-selector-section">
     <div class="quick-picks">
       {gpus
-        .filter((g) => ['rtx-4060', 'rtx-4070', 'rtx-4090', 'm3', 'm4-pro', 'cloud-a100'].includes(g.slug))
-        .map((g) => (
+        .filter((gpu) => ['rtx-4060', 'rtx-4070', 'rtx-4090', 'rtx-5090', 'm3', 'm4-pro', 'cloud-a100', 'cloud-h100'].includes(gpu.slug))
+        .map((gpu) => (
           <button
             class="gpu-quick-btn"
-            data-slug={g.slug}
-            data-vram={g.vram}
+            data-slug={gpu.slug}
+            data-vram={gpu.vram}
             onclick="selectGPU(this.dataset.slug, parseInt(this.dataset.vram), this.textContent.trim())"
           >
-            {g.name}
+            {gpu.name}
           </button>
         ))}
     </div>
     <div class="selector-row">
       <select id="gpu-select" onchange="onGPUSelect(this)">
         <option value="">-- Select your GPU --</option>
-        {['desktop', 'laptop', 'mac', 'cloud'].map((cat) => (
-          <optgroup label={cat.charAt(0).toUpperCase() + cat.slice(1)}>
+        {['desktop', 'laptop', 'mac', 'cloud'].map((category) => (
+          <optgroup label={category.charAt(0).toUpperCase() + category.slice(1)}>
             {gpus
-              .filter((g) => g.category === cat)
-              .map((g) => (
-                <option value={g.slug} data-vram={g.vram}>
-                  {g.name} ({g.vram}GB)
+              .filter((gpu) => gpu.category === category)
+              .map((gpu) => (
+                <option value={gpu.slug} data-vram={gpu.vram}>
+                  {gpu.name} ({gpu.vram}GB)
                 </option>
               ))}
           </optgroup>
@@ -67,23 +81,44 @@ import { affiliates } from '../data/affiliates';
   </div>
 </div>
 
+<script id="matcher-data" type="application/json" set:html={JSON.stringify(matcherData)}></script>
+
 <script>
-import { affiliates } from '../data/affiliates';
-import { getModelsForVram, type LLMModel } from '../data/models';
-import { gpus } from '../data/gpus';
+import type { GPU } from '../data/gpus';
+import type { LLMModel } from '../data/models';
+
+const matcherDataEl = document.getElementById('matcher-data');
+const matcherData = matcherDataEl?.textContent
+  ? JSON.parse(matcherDataEl.textContent) as {
+      gpus: GPU[];
+      models: LLMModel[];
+      affiliateUrls: { amazonGpu: string; runpod: string };
+    }
+  : { gpus: [], models: [], affiliateUrls: { amazonGpu: '', runpod: '' } };
+
+const gpus = matcherData.gpus;
+const models = matcherData.models;
+const affiliateUrls = matcherData.affiliateUrls;
 
 let currentGPUSlug = '';
 let currentGPUName = '';
 let currentVram = 0;
+
+function getModelsForVram(userGpu?: GPU, fallbackVram = 0): LLMModel[] {
+  const vram = userGpu?.vram ?? fallbackVram;
+  return models
+    .filter((model) => model.minVram <= vram)
+    .sort((a, b) => b.minVram - a.minVram);
+}
 
 function selectGPU(slug: string | undefined, vram: number, name: string) {
   if (!slug || !Number.isFinite(vram)) return;
   currentGPUSlug = slug;
   currentVram = vram;
   currentGPUName = name;
-  document.querySelectorAll('.gpu-quick-btn').forEach((b) => b.classList.remove('active'));
-  const btn = document.querySelector<HTMLElement>(`.gpu-quick-btn[data-slug="${slug}"]`);
-  btn?.classList.add('active');
+  document.querySelectorAll('.gpu-quick-btn').forEach((button) => button.classList.remove('active'));
+  const button = document.querySelector<HTMLElement>(`.gpu-quick-btn[data-slug="${slug}"]`);
+  button?.classList.add('active');
   const select = document.getElementById('gpu-select');
   if (select instanceof HTMLSelectElement) select.value = slug;
   renderResults(slug, vram, name);
@@ -91,39 +126,49 @@ function selectGPU(slug: string | undefined, vram: number, name: string) {
 }
 
 function onGPUSelect(select: HTMLSelectElement) {
-  const opt = select.options[select.selectedIndex];
-  if (!(opt instanceof HTMLOptionElement) || !opt.value) return;
-  const vram = parseInt(opt.dataset.vram ?? '', 10);
+  const option = select.options[select.selectedIndex];
+  if (!(option instanceof HTMLOptionElement) || !option.value) return;
+  const vram = parseInt(option.dataset.vram ?? '', 10);
   if (!Number.isFinite(vram)) return;
-  selectGPU(opt.value, vram, opt.text.split(' (')[0]);
+  selectGPU(option.value, vram, option.text.split(' (')[0]);
 }
 
 function autoDetect() {
-  const ram = (navigator as any).deviceMemory || 4;
+  const ram = (navigator as Navigator & { deviceMemory?: number }).deviceMemory || 4;
   const estimatedVram = navigator.userAgent.toLowerCase().includes('mac')
     ? Math.max(ram / 2, 8)
     : Math.max(ram / 2, 4);
   const guess =
-    gpus.find((g) => Math.abs(g.vram - estimatedVram) < 3) ||
-    gpus.find((g) => g.vram <= estimatedVram) ||
+    gpus.find((gpu) => Math.abs(gpu.vram - estimatedVram) < 3) ||
+    gpus.find((gpu) => gpu.vram <= estimatedVram) ||
     gpus[gpus.length - 1];
-  const sel = document.getElementById('gpu-select');
-  if (sel instanceof HTMLSelectElement) sel.value = guess.slug;
+  if (!guess) return;
+  const select = document.getElementById('gpu-select');
+  if (select instanceof HTMLSelectElement) select.value = guess.slug;
   selectGPU(guess.slug, guess.vram, guess.name);
   (window as any).trackEvent?.('auto_detect_used', { estimated_vram: estimatedVram });
 }
 
 function renderResults(slug: string, vram: number, name: string) {
-  const matches = getModelsForVram(vram);
   const resultsEl = document.getElementById('results');
   const titleEl = document.getElementById('results-title');
   const gridEl = document.getElementById('results-grid');
   const badgeEl = document.getElementById('badge-section');
-  if (!resultsEl || !titleEl || !gridEl || !badgeEl) return;
+  const amazonLink = document.getElementById('amazon-link');
+  const selectedGpu = gpus.find((gpu) => gpu.slug === slug);
+  const matches = getModelsForVram(selectedGpu, vram);
+  if (!resultsEl || !titleEl || !gridEl || !badgeEl || !amazonLink) return;
 
   titleEl.textContent = `Best LLMs for ${name} (${vram}GB VRAM)`;
+  if (selectedGpu?.amazonLink) {
+    amazonLink.setAttribute('href', selectedGpu.amazonLink);
+    amazonLink.style.display = 'inline-flex';
+  } else {
+    amazonLink.style.display = 'none';
+  }
+
   gridEl.innerHTML = matches.length
-    ? matches.map((m, i) => modelCardHTML(m, vram, i + 1)).join('')
+    ? matches.map((model, index) => modelCardHTML(model, vram, index + 1, selectedGpu)).join('')
     : '<p style="color:var(--text-secondary)">No models found for this VRAM. Consider cloud GPU.</p>';
 
   badgeEl.innerHTML = matches.length > 0
@@ -134,20 +179,23 @@ function renderResults(slug: string, vram: number, name: string) {
   (window as any).trackEvent?.('match_viewed', { gpu: slug, top_model: matches[0]?.slug });
 }
 
-function modelCardHTML(model: LLMModel, userVram: number, rank: number) {
+function modelCardHTML(model: LLMModel, userVram: number, rank: number, userGpu?: GPU) {
   const fits = model.minVram <= userVram;
-  const tags = model.tags.map((t) => `<span class="badge tag">${escapeHTML(t)}</span>`).join('');
+  const tags = model.tags.map((tag) => `<span class="badge tag">${escapeHTML(tag)}</span>`).join('');
   const cmd = model.ollamaCmd.replace(/'/g, "\\'");
+  const tpsText = typeof model.tpsRtx4090 === 'number' && typeof userGpu?.tpsRatio === 'number'
+    ? `<span class="badge tps">Estimated TPS ~${Math.round(model.tpsRtx4090 * userGpu.tpsRatio)} tok/s</span>`
+    : '';
   return `
     <div class="model-card ${fits ? 'fits' : 'no-fit'}">
       <span class="rank">#${rank}</span>
       <div class="card-header"><h3>${escapeHTML(model.name)}</h3><span class="params">${escapeHTML(model.params)}</span></div>
       <p class="desc">${escapeHTML(model.description)}</p>
-      <div class="meta"><span class="badge">Min ${model.minVram}GB</span>${tags}</div>
+      <div class="meta"><span class="badge">Min ${model.minVram}GB</span>${tpsText}${tags}</div>
       <div class="ollama"><code>${escapeHTML(model.ollamaCmd)}</code>
         <button class="copy-btn" onclick="navigator.clipboard.writeText('${cmd}');this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',1500)">Copy</button>
       </div>
-      ${!fits ? `<div class="cloud-cta">⚡ VRAM too small — <a href="${affiliates.runpod}" target="_blank" rel="noopener sponsored" onclick="trackEvent('affiliate_click',{affiliate:'runpod'})">Try RunPod cloud →</a></div>` : ''}
+      ${!fits ? `<div class="cloud-cta">⚡ VRAM too small — <a href="${affiliateUrls.runpod}" target="_blank" rel="noopener sponsored" onclick="trackEvent('affiliate_click',{affiliate:'runpod'})">Try RunPod cloud →</a></div>` : ''}
       <button class="vote-btn" onclick="vote('${currentGPUSlug}','${model.slug}', this)">👍 I use this</button>
     </div>`;
 }
@@ -170,20 +218,20 @@ function shareResults() {
     navigator.share({ title: `Best LLMs for ${currentGPUName}`, url });
   } else {
     navigator.clipboard.writeText(url);
-    const btn = document.getElementById('share-btn');
-    if (btn) {
-      btn.textContent = '✅ Link copied!';
+    const button = document.getElementById('share-btn');
+    if (button) {
+      button.textContent = '✅ Link copied!';
       setTimeout(() => {
-        btn.textContent = '📤 Share my results';
+        button.textContent = '📤 Share my results';
       }, 2000);
     }
   }
   (window as any).trackEvent?.('share_clicked', { gpu: currentGPUSlug });
 }
 
-async function vote(gpuSlug: string, modelSlug: string, btn: HTMLButtonElement) {
-  btn.disabled = true;
-  btn.textContent = '✅ Voted!';
+async function vote(gpuSlug: string, modelSlug: string, button: HTMLButtonElement) {
+  button.disabled = true;
+  button.textContent = '✅ Voted!';
   try {
     await fetch('/api/vote', {
       method: 'POST',
@@ -192,8 +240,8 @@ async function vote(gpuSlug: string, modelSlug: string, btn: HTMLButtonElement) 
     });
     (window as any).trackEvent?.('vote_submitted', { gpu: gpuSlug, model: modelSlug });
   } catch {
-    btn.textContent = '👍 I use this';
-    btn.disabled = false;
+    button.textContent = '👍 I use this';
+    button.disabled = false;
   }
 }
 
@@ -238,9 +286,16 @@ function generateBadge(gpuSlug: string, gpuName: string, modelSlug: string, mode
   .desc { color: var(--text-secondary); font-size: .82rem; margin-bottom: .7rem; }
   .meta { display: flex; flex-wrap: wrap; gap: .35rem; margin-bottom: .7rem; }
   .badge.tag { color: var(--accent); border-color: rgba(88,166,255,.3); }
+  .badge.tps { color: var(--accent-green); border-color: rgba(63,185,80,.3); }
   .ollama { display: flex; align-items: center; gap: .5rem; background: var(--bg); border-radius: var(--radius); padding: .35rem .6rem; margin-bottom: .5rem; }
   .ollama code { flex: 1; font-size: .78rem; color: var(--accent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .copy-btn, .vote-btn { font-size: .75rem; padding: .2rem .6rem; background: var(--bg-hover); border: 1px solid var(--border); border-radius: 4px; color: var(--text-secondary); cursor: pointer; }
   .vote-btn { margin-top: .3rem; }
   .cloud-cta { font-size: .8rem; color: var(--text-secondary); margin-bottom: .4rem; }
+  @media (max-width: 700px) {
+    .results-header { align-items: flex-start; flex-direction: column; }
+    .results-grid { grid-template-columns: 1fr; }
+    .card-header, .ollama { align-items: flex-start; flex-direction: column; }
+    .copy-btn, .vote-btn { width: 100%; }
+  }
 </style>

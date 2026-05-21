@@ -1,0 +1,11 @@
+name: "Llama 3.2 3B"
+slug: "llama3.2-3b"
+family: "Llama 3"
+minVram: 2
+fullVram: 6
+params: "3B"
+tags: ["chat", "coding"]
+ollamaCmd: "ollama run llama3.2:3b"
+description: "Llama 3.2 3B delivers solid instruction-following on budget hardware."
+affiliateTier: "beginner"
+tpsRtx4090: 248

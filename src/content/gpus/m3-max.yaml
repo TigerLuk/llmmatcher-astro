@@ -1,0 +1,5 @@
+name: "Apple M3 Max"
+slug: "m3-max"
+vram: 36
+category: "mac"
+tpsRatio: 0.4

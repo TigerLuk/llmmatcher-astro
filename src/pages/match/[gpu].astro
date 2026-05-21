@@ -1,22 +1,24 @@
 ---
-// src/pages/match/[gpu].astro
+import { getCollection } from 'astro:content';
+import type { GPU } from '../../data/gpus';
+import type { LLMModel } from '../../data/models';
+import { getModelsForVram } from '../../data/models';
 import Base from '../../layouts/Base.astro';
 import ModelCard from '../../components/ModelCard.astro';
-import { gpus, getGPUBySlug } from '../../data/gpus';
-import { getModelsForVram } from '../../data/models';
 import { affiliates } from '../../data/affiliates';
 
 export async function getStaticPaths() {
-  return gpus.map((gpu) => ({ params: { gpu: gpu.slug } }));
+  const gpuEntries = await getCollection('gpus');
+  return gpuEntries.map((entry) => ({
+    params: { gpu: entry.data.slug },
+    props: { gpu: entry.data as GPU },
+  }));
 }
 
-const { gpu: gpuSlug } = Astro.params;
-const gpu = getGPUBySlug(gpuSlug!);
-if (!gpu) {
-  return Astro.redirect('/');
-}
-
-const matches = getModelsForVram(gpu.vram);
+const { gpu } = Astro.props as { gpu: GPU };
+const modelEntries = await getCollection('models');
+const models: LLMModel[] = modelEntries.map(({ data }) => data as LLMModel);
+const matches = getModelsForVram(models, gpu.vram);
 const title = `Best LLMs for ${gpu.name} (${gpu.vram}GB VRAM) — 2026`;
 const description = `Top ${matches.length} open-source AI models you can run locally on ${gpu.name}. Includes ollama commands, VRAM requirements, and setup guides.`;
 ---
@@ -45,8 +47,15 @@ const description = `Top ${matches.length} open-source AI models you can run loc
     </div>
 
     <div class="results-grid" style="margin-top:2rem">
-      {matches.map((model, i) => (
-        <ModelCard model={model} userVram={gpu.vram} rank={i + 1} />
+      {matches.map((model, index) => (
+        <ModelCard
+          model={model}
+          userVram={gpu.vram}
+          rank={index + 1}
+          estimatedTps={typeof model.tpsRtx4090 === 'number' && typeof gpu.tpsRatio === 'number'
+            ? Math.round(model.tpsRtx4090 * gpu.tpsRatio)
+            : undefined}
+        />
       ))}
     </div>
 

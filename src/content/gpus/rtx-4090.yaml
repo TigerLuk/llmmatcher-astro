@@ -1,0 +1,6 @@
+name: "RTX 4090"
+slug: "rtx-4090"
+vram: 24
+category: "desktop"
+tpsRatio: 1.0
+amazonLink: "https://amzn.to/4uGfGdl"

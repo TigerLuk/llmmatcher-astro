@@ -1,0 +1,11 @@
+name: "Command R 35B"
+slug: "command-r"
+family: "Command R"
+minVram: 22
+fullVram: 70
+params: "35B"
+tags: ["research", "chat", "reasoning"]
+ollamaCmd: "ollama run command-r"
+description: "Cohere Command R — optimized for RAG, long-context retrieval and research tasks."
+affiliateTier: "high"
+tpsRtx4090: 34

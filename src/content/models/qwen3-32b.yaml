@@ -1,0 +1,11 @@
+name: "Qwen3 32B"
+slug: "qwen3-32b"
+family: "Qwen3"
+minVram: 20
+fullVram: 64
+params: "32B"
+tags: ["chat", "coding", "multilingual", "reasoning"]
+ollamaCmd: "ollama run qwen3:32b"
+description: "Qwen3 32B — top-tier multilingual reasoning for 24GB workstation GPUs."
+affiliateTier: "high"
+tpsRtx4090: 38

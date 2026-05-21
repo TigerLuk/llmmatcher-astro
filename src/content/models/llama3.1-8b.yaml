@@ -1,0 +1,11 @@
+name: "Llama 3.1 8B"
+slug: "llama3.1-8b"
+family: "Llama 3"
+minVram: 5
+fullVram: 16
+params: "8B"
+tags: ["chat", "coding", "reasoning"]
+ollamaCmd: "ollama run llama3.1:8b"
+description: "Meta Llama 3.1 8B — the go-to all-rounder for 8GB+ GPUs."
+affiliateTier: "mid"
+tpsRtx4090: 132

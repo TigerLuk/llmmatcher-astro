@@ -1,0 +1,11 @@
+name: "DeepSeek R1 1.5B"
+slug: "deepseek-r1-1.5b"
+family: "DeepSeek"
+minVram: 1
+fullVram: 3
+params: "1.5B distilled"
+tags: ["reasoning", "coding"]
+ollamaCmd: "ollama run deepseek-r1:1.5b"
+description: "Smallest DeepSeek R1 distill — strong reasoning in an ultra-tiny package."
+affiliateTier: "beginner"
+tpsRtx4090: 328

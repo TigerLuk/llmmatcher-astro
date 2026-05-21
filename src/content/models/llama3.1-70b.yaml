@@ -1,0 +1,11 @@
+name: "Llama 3.1 70B"
+slug: "llama3.1-70b"
+family: "Llama 3"
+minVram: 40
+fullVram: 140
+params: "70B"
+tags: ["chat", "coding", "research", "reasoning"]
+ollamaCmd: "ollama run llama3.1:70b"
+description: "Llama 3.1 70B delivers frontier-quality reasoning and coding at full local control."
+affiliateTier: "high"
+tpsRtx4090: 18

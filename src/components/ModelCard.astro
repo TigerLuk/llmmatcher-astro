@@ -7,8 +7,9 @@ export interface Props {
   model: LLMModel;
   userVram: number;
   rank?: number;
+  estimatedTps?: number;
 }
-const { model, userVram, rank } = Astro.props;
+const { model, userVram, rank, estimatedTps } = Astro.props;
 const fits = model.minVram <= userVram;
 const needsCloud = !fits;
 const runpodOnClick = `trackEvent('affiliate_click',{affiliate:'runpod',model:'${model.slug}'})`;
@@ -22,6 +23,7 @@ const runpodOnClick = `trackEvent('affiliate_click',{affiliate:'runpod',model:'$
   <p class="desc">{model.description}</p>
   <div class="meta">
     <span class="badge">Min {model.minVram}GB VRAM</span>
+    {typeof estimatedTps === 'number' && <span class="badge tps">Estimated TPS ~{estimatedTps} tok/s</span>}
     {model.tags.map((t) => <span class="badge tag">{t}</span>)}
   </div>
   <div class="ollama">
@@ -56,8 +58,13 @@ const runpodOnClick = `trackEvent('affiliate_click',{affiliate:'runpod',model:'$
   .desc { color: var(--text-secondary); font-size: .85rem; margin-bottom: .8rem; }
   .meta { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: .8rem; }
   .badge.tag { color: var(--accent); border-color: var(--accent); }
+  .badge.tps { color: var(--accent-green); border-color: rgba(63,185,80,.35); }
   .ollama { display: flex; align-items: center; gap: .5rem; background: var(--bg); border-radius: var(--radius); padding: .4rem .7rem; }
-  .ollama code { flex: 1; font-size: .8rem; color: var(--accent); }
+  .ollama code { flex: 1; font-size: .8rem; color: var(--accent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .copy-btn { font-size: .75rem; padding: .2rem .6rem; background: var(--bg-hover); border: 1px solid var(--border); border-radius: 4px; color: var(--text-secondary); cursor: pointer; }
   .cloud-cta { margin-top: .8rem; font-size: .82rem; color: var(--text-secondary); }
+  @media (max-width: 700px) {
+    .card-header, .ollama { align-items: flex-start; flex-direction: column; }
+    .copy-btn { width: 100%; }
+  }
 </style>

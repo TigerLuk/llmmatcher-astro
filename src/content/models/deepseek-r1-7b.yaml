@@ -1,0 +1,11 @@
+name: "DeepSeek R1 7B"
+slug: "deepseek-r1-7b"
+family: "DeepSeek"
+minVram: 5
+fullVram: 14
+params: "7B distilled"
+tags: ["reasoning", "coding", "research"]
+ollamaCmd: "ollama run deepseek-r1:7b"
+description: "DeepSeek R1 7B distill delivers chain-of-thought reasoning on consumer GPUs."
+affiliateTier: "mid"
+tpsRtx4090: 130

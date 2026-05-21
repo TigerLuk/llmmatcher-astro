@@ -1,0 +1,11 @@
+name: "Qwen3 0.6B"
+slug: "qwen3-0.6b"
+family: "Qwen3"
+minVram: 1
+fullVram: 2
+params: "0.6B"
+tags: ["chat", "multilingual"]
+ollamaCmd: "ollama run qwen3:0.6b"
+description: "Ultra-lightweight Qwen3 for fast on-device chat on any hardware."
+affiliateTier: "beginner"
+tpsRtx4090: 380

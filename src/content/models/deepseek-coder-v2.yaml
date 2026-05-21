@@ -1,0 +1,11 @@
+name: "DeepSeek Coder V2"
+slug: "deepseek-coder-v2"
+family: "DeepSeek"
+minVram: 10
+fullVram: 32
+params: "16B MoE"
+tags: ["coding", "reasoning"]
+ollamaCmd: "ollama run deepseek-coder-v2"
+description: "DeepSeek Coder V2 MoE — advanced code intelligence rivaling GPT-4 Code Interpreter."
+affiliateTier: "mid"
+tpsRtx4090: 72

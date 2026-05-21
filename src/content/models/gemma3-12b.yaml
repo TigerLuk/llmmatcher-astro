@@ -1,0 +1,11 @@
+name: "Gemma 3 12B"
+slug: "gemma3-12b"
+family: "Gemma 3"
+minVram: 9
+fullVram: 24
+params: "12B"
+tags: ["chat", "creative", "research"]
+ollamaCmd: "ollama run gemma3:12b"
+description: "Google's multimodal Gemma 3 mid-size model, practical on 10GB+ GPUs."
+affiliateTier: "mid"
+tpsRtx4090: 88

@@ -1,7 +1,11 @@
 ---
-import Base from '../layouts/Base.astro';
-import { models } from '../data/models';
+import { getCollection } from 'astro:content';
+import type { LLMModel } from '../data/models';
 import { affiliates } from '../data/affiliates';
+import Base from '../layouts/Base.astro';
+
+const modelEntries = await getCollection('models');
+const models: LLMModel[] = modelEntries.map(({ data }) => data as LLMModel);
 ---
 <Base title="LLM Leaderboard — Most Popular Local AI Models by GPU"
   description="Community-voted rankings of the most popular local LLMs. Vote for the model you actually use on your GPU.">
@@ -22,35 +26,49 @@ import { affiliates } from '../data/affiliates';
   </div>
 </Base>
 
+<script id="leaderboard-models" type="application/json" set:html={JSON.stringify(models)}></script>
+
 <script>
-import { models } from '../data/models';
+import type { LLMModel } from '../data/models';
+
+const modelDataEl = document.getElementById('leaderboard-models');
+const models = modelDataEl?.textContent ? JSON.parse(modelDataEl.textContent) as LLMModel[] : [];
 
 async function loadLeaderboard() {
   const board = document.getElementById('board');
   if (!board) return;
   try {
-    const res = await fetch('/api/leaderboard');
-    const data = await res.json() as Array<{ model_slug: string; votes: number }>;
+    const response = await fetch('/api/leaderboard');
+    const data = await response.json() as Array<{ model_slug: string; votes: number }>;
     if (!data.length) {
       board.innerHTML = '<p style="color:var(--text-secondary);text-align:center">No votes yet. Be the first! <a href="/">Match your GPU →</a></p>';
       return;
     }
-    board.innerHTML = data.map((row, i) => {
-      const model = models.find((m) => m.slug === row.model_slug);
-      const name = model?.name || row.model_slug;
-      return `
-        <div class="board-row">
-          <span class="board-rank">#${i + 1}</span>
-          <div class="board-info">
-            <a href="/models/${row.model_slug}" class="board-name">${name}</a>
-            ${model ? `<div class="board-tags">${model.tags.map((t) => `<span class="badge tag">${t}</span>`).join('')}</div>` : ''}
-          </div>
-          <div class="board-votes">
-            <span class="vote-count">${row.votes}</span>
-            <span style="font-size:.75rem;color:var(--text-muted)">votes</span>
-          </div>
-        </div>`;
-    }).join('');
+    board.innerHTML = `
+      <div class="board-head board-row">
+        <span class="board-rank">#</span>
+        <div class="board-info">Model</div>
+        <div class="board-tps">RTX 4090 tok/s</div>
+        <div class="board-votes">Votes</div>
+      </div>
+      ${data.map((row, index) => {
+        const model = models.find((entry) => entry.slug === row.model_slug);
+        const name = model?.name || row.model_slug;
+        const tps = typeof model?.tpsRtx4090 === 'number' ? `~${Math.round(model.tpsRtx4090)} tok/s` : '—';
+        return `
+          <div class="board-row">
+            <span class="board-rank">#${index + 1}</span>
+            <div class="board-info">
+              <a href="/models/${row.model_slug}" class="board-name">${name}</a>
+              ${model ? `<div class="board-tags">${model.tags.map((tag) => `<span class="badge tag">${tag}</span>`).join('')}</div>` : ''}
+            </div>
+            <div class="board-tps">${tps}</div>
+            <div class="board-votes">
+              <span class="vote-count">${row.votes}</span>
+              <span style="font-size:.75rem;color:var(--text-muted)">votes</span>
+            </div>
+          </div>`;
+      }).join('')}`;
   } catch {
     board.innerHTML = '<p style="color:var(--text-muted)">Could not load leaderboard. Try again later.</p>';
   }
@@ -61,11 +79,18 @@ loadLeaderboard();
 
 <style>
   .loading { text-align:center;color:var(--text-muted);padding:2rem; }
-  .board-row { display:flex;align-items:center;gap:1rem;padding:.8rem 1rem;border:1px solid var(--border);border-radius:var(--radius);margin-bottom:.5rem;background:var(--bg-card); }
+  .board-row { display:grid;grid-template-columns:56px minmax(0,1fr) 120px 90px;align-items:center;gap:1rem;padding:.8rem 1rem;border:1px solid var(--border);border-radius:var(--radius);margin-bottom:.5rem;background:var(--bg-card); }
+  .board-head { color:var(--text-muted);font-size:.78rem;font-weight:600; }
   .board-rank { font-size:1.1rem;font-weight:700;color:var(--text-muted);min-width:2rem; }
-  .board-info { flex:1; }
+  .board-info { min-width:0; }
   .board-name { font-weight:600;color:var(--text-primary); }
   .board-tags { display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.3rem; }
+  .board-tps { color:var(--accent-green);font-size:.82rem;font-weight:600; }
   .badge.tag { color:var(--accent);border-color:rgba(88,166,255,.3); }
   .vote-count { font-size:1.2rem;font-weight:700;color:var(--accent-green); }
+  @media (max-width: 700px) {
+    .board-row { grid-template-columns:40px minmax(0,1fr); }
+    .board-head .board-tps, .board-head .board-votes { display:none; }
+    .board-tps, .board-votes { grid-column:2; }
+  }
 </style>

@@ -1,0 +1,5 @@
+name: "Apple M3"
+slug: "m3"
+vram: 8
+category: "mac"
+tpsRatio: 0.16

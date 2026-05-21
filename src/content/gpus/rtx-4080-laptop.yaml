@@ -1,0 +1,6 @@
+name: "RTX 4080 Laptop"
+slug: "rtx-4080-laptop"
+vram: 12
+category: "laptop"
+tpsRatio: 0.43
+amazonLink: "https://amzn.to/4uGfGdl"

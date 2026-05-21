@@ -1,0 +1,11 @@
+name: "Qwen 2.5 32B"
+slug: "qwen2.5-32b"
+family: "Qwen 2.5"
+minVram: 20
+fullVram: 64
+params: "32B"
+tags: ["chat", "coding", "multilingual"]
+ollamaCmd: "ollama run qwen2.5:32b"
+description: "Qwen 2.5 32B — strongest multilingual model fitting on a single 24GB GPU."
+affiliateTier: "high"
+tpsRtx4090: 37

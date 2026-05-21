@@ -1,0 +1,11 @@
+name: "Llama 4 Maverick"
+slug: "llama-4-maverick"
+family: "Llama 4"
+minVram: 256
+fullVram: 803
+params: "400B MoE (17B active)"
+tags: ["chat", "research", "creative"]
+ollamaCmd: "ollama run llama4:maverick"
+description: "Meta's larger multimodal Llama 4 model, best suited to cloud or datacenter GPUs."
+affiliateTier: "high"
+tpsRtx4090: 8

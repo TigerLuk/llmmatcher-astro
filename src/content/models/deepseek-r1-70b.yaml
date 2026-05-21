@@ -1,0 +1,11 @@
+name: "DeepSeek R1 70B"
+slug: "deepseek-r1-70b"
+family: "DeepSeek"
+minVram: 40
+fullVram: 140
+params: "70B distilled"
+tags: ["reasoning", "research", "coding"]
+ollamaCmd: "ollama run deepseek-r1:70b"
+description: "DeepSeek R1 70B — strongest local reasoning model, requires server-grade GPU."
+affiliateTier: "high"
+tpsRtx4090: 16

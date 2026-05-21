@@ -1,0 +1,11 @@
+name: "Qwen3 4B"
+slug: "qwen3-4b"
+family: "Qwen3"
+minVram: 3
+fullVram: 8
+params: "4B"
+tags: ["chat", "coding", "multilingual"]
+ollamaCmd: "ollama run qwen3:4b"
+description: "Balanced Qwen3 model for everyday chat and coding on entry-level GPUs."
+affiliateTier: "beginner"
+tpsRtx4090: 205

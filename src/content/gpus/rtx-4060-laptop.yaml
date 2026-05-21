@@ -1,0 +1,6 @@
+name: "RTX 4060 Laptop"
+slug: "rtx-4060-laptop"
+vram: 8
+category: "laptop"
+tpsRatio: 0.22
+amazonLink: "https://amzn.to/4uGfGdl"

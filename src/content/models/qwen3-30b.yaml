@@ -1,0 +1,11 @@
+name: "Qwen3 30B"
+slug: "qwen3-30b"
+family: "Qwen3"
+minVram: 19
+fullVram: 61
+params: "30B MoE (3B active)"
+tags: ["chat", "coding", "multilingual", "reasoning"]
+ollamaCmd: "ollama run qwen3:30b"
+description: "Sparse Qwen3 MoE model with 256K context. Only 3B parameters are active per token, so it runs much faster than a dense 30B on 24GB-class GPUs."
+affiliateTier: "high"
+tpsRtx4090: 95

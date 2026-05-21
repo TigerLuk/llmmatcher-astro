@@ -1,0 +1,11 @@
+name: "Gemma 3 27B"
+slug: "gemma3-27b"
+family: "Gemma 3"
+minVram: 18
+fullVram: 55
+params: "27B"
+tags: ["chat", "research", "creative"]
+ollamaCmd: "ollama run gemma3:27b"
+description: "Google's multimodal Gemma 3 large model with 128K context and image input."
+affiliateTier: "high"
+tpsRtx4090: 38

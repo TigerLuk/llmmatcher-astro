@@ -1,0 +1,5 @@
+name: "Cloud A100 (40GB)"
+slug: "cloud-a100"
+vram: 40
+category: "cloud"
+tpsRatio: 1.54

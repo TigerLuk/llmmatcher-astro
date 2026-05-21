@@ -1,0 +1,6 @@
+name: "RTX 4090 Laptop"
+slug: "rtx-4090-laptop"
+vram: 16
+category: "laptop"
+tpsRatio: 0.57
+amazonLink: "https://amzn.to/4uGfGdl"

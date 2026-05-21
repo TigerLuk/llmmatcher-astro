@@ -1,0 +1,11 @@
+name: "Qwen3 1.7B"
+slug: "qwen3-1.7b"
+family: "Qwen3"
+minVram: 1
+fullVram: 4
+params: "1.7B"
+tags: ["chat", "coding", "multilingual"]
+ollamaCmd: "ollama run qwen3:1.7b"
+description: "Compact Qwen3 model for quick chat and light coding tasks with minimal VRAM."
+affiliateTier: "beginner"
+tpsRtx4090: 295

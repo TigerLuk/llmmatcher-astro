@@ -21,3 +21,84 @@ collections:
       - { label: Tags, name: tags, widget: list, default: [] }
       - { label: Draft, name: draft, widget: boolean, default: false }
       - { label: Body, name: body, widget: markdown }
+
+  - name: models
+    label: LLM Models
+    label_singular: LLM Model
+    folder: src/content/models
+    create: true
+    extension: yaml
+    format: yaml
+    identifier_field: slug
+    slug: "{{slug}}"
+    fields:
+      - { label: "Model Name", name: name, widget: string, hint: "Display name, e.g. Llama 4 Scout" }
+      - { label: "Slug", name: slug, widget: string, hint: "URL-safe ID, e.g. llama-4-scout (lowercase, hyphens only)" }
+      - { label: "Family", name: family, widget: string, hint: "Model family, e.g. Llama 4, Qwen3, Gemma 3" }
+      - { label: "Min VRAM (GB)", name: minVram, widget: number, hint: "Minimum VRAM for q4 quantization" }
+      - { label: "Full VRAM (GB)", name: fullVram, widget: number, hint: "VRAM needed for fp16 full precision" }
+      - { label: "Params", name: params, widget: string, hint: "Parameter count, e.g. 8B, 70B, 17B MoE" }
+      - label: "Use Case Tags"
+        name: tags
+        widget: select
+        multiple: true
+        options: ["chat", "coding", "creative", "research", "reasoning", "multilingual", "multimodal", "agentic"]
+      - { label: "Ollama Command", name: ollamaCmd, widget: string, hint: "e.g. ollama run llama4:scout" }
+      - { label: "Description", name: description, widget: text, hint: "One sentence description in English" }
+      - { label: "TPS on RTX 4090 (approx)", name: tpsRtx4090, widget: number, required: false, hint: "Approximate tokens/sec on RTX 4090 at Q4_K_M. Leave blank if unknown." }
+      - label: "Affiliate Tier"
+        name: affiliateTier
+        widget: select
+        options:
+          - { label: "Beginner (runs on 4-6GB VRAM)", value: beginner }
+          - { label: "Mid (7-16GB VRAM)", value: mid }
+          - { label: "High (17GB+ VRAM)", value: high }
+
+  - name: pages
+    label: Static Pages
+    files:
+      - label: "About & Affiliate Disclosure"
+        name: about
+        file: src/content/pages/about.md
+        fields:
+          - { label: Title, name: title, widget: string }
+          - { label: Body, name: body, widget: markdown }
+      - label: "Privacy Policy"
+        name: privacy
+        file: src/content/pages/privacy.md
+        fields:
+          - { label: Title, name: title, widget: string }
+          - { label: "Last Updated", name: lastUpdated, widget: string }
+          - { label: Body, name: body, widget: markdown }
+      - label: "Terms of Service"
+        name: terms
+        file: src/content/pages/terms.md
+        fields:
+          - { label: Title, name: title, widget: string }
+          - { label: "Last Updated", name: lastUpdated, widget: string }
+          - { label: Body, name: body, widget: markdown }
+
+  - name: gpus
+    label: GPU List
+    label_singular: GPU
+    folder: src/content/gpus
+    create: true
+    extension: yaml
+    format: yaml
+    identifier_field: slug
+    slug: "{{slug}}"
+    fields:
+      - { label: "GPU Name", name: name, widget: string, hint: "Display name, e.g. RTX 4060" }
+      - { label: "Slug", name: slug, widget: string, hint: "URL-safe ID, e.g. rtx-4060" }
+      - { label: "VRAM (GB)", name: vram, widget: number, hint: "Total VRAM in GB" }
+      - label: "Category"
+        name: category
+        widget: select
+        options:
+          - { label: "Desktop GPU", value: desktop }
+          - { label: "Laptop GPU", value: laptop }
+          - { label: "Workstation GPU", value: workstation }
+          - { label: "Apple Silicon (Mac)", value: mac }
+          - { label: "Cloud GPU", value: cloud }
+      - { label: "Amazon Affiliate Link", name: amazonLink, widget: string, required: false, hint: "Amazon affiliate URL (optional, not needed for Mac/Cloud)" }
+      - { label: "TPS Ratio vs RTX 4090", name: tpsRatio, widget: number, required: false, hint: "Performance ratio vs RTX 4090 (1.0 = same speed, 0.5 = half speed). Based on memory bandwidth." }

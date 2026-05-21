@@ -1,0 +1,11 @@
+name: "Qwen 2.5 7B"
+slug: "qwen2.5-7b"
+family: "Qwen 2.5"
+minVram: 5
+fullVram: 14
+params: "7B"
+tags: ["chat", "coding", "multilingual"]
+ollamaCmd: "ollama run qwen2.5:7b"
+description: "Qwen 2.5 7B — multilingual powerhouse for coding and chat on 8GB GPUs."
+affiliateTier: "mid"
+tpsRtx4090: 128

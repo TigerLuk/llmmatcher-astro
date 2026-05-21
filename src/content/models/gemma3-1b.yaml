@@ -1,0 +1,11 @@
+name: "Gemma 3 1B"
+slug: "gemma3-1b"
+family: "Gemma 3"
+minVram: 1
+fullVram: 2
+params: "1B"
+tags: ["chat"]
+ollamaCmd: "ollama run gemma3:1b"
+description: "Google's smallest Gemma 3 model, ideal for resource-constrained devices."
+affiliateTier: "beginner"
+tpsRtx4090: 400

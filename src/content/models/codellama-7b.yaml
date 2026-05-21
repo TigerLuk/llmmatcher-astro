@@ -1,0 +1,11 @@
+name: "Code Llama 7B"
+slug: "codellama-7b"
+family: "Code Llama"
+minVram: 5
+fullVram: 14
+params: "7B"
+tags: ["coding"]
+ollamaCmd: "ollama run codellama:7b"
+description: "Meta Code Llama 7B — specialized code generation and completion model."
+affiliateTier: "mid"
+tpsRtx4090: 130

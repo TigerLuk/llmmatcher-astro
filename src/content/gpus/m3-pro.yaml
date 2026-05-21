@@ -1,0 +1,5 @@
+name: "Apple M3 Pro"
+slug: "m3-pro"
+vram: 18
+category: "mac"
+tpsRatio: 0.2

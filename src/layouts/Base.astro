@@ -78,6 +78,19 @@ const canonicalURL = canonical ?? new URL(Astro.url.pathname, Astro.site).href;
       color: var(--text-muted); font-size: .85rem; text-align: center;
     }
     footer a { color: var(--text-muted); }
+    footer .footer-links { display: flex; justify-content: center; gap: 1.2rem; flex-wrap: wrap; margin-bottom: .5rem; }
+    /* Prose styles for markdown-rendered pages */
+    .prose h1 { font-size: 1.8rem; margin-bottom: 1rem; }
+    .prose h2 { font-size: 1.2rem; margin-top: 2rem; margin-bottom: .6rem; border-bottom: 1px solid var(--border); padding-bottom: .4rem; }
+    .prose p { margin-bottom: .8rem; color: var(--text-secondary); line-height: 1.75; }
+    .prose ul { padding-left: 1.5rem; margin-bottom: .8rem; }
+    .prose li { margin-bottom: .3rem; color: var(--text-secondary); line-height: 1.75; }
+    .prose a { color: var(--accent); }
+    .prose table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; font-size: .9rem; }
+    .prose th { background: var(--bg-hover); padding: .5rem .8rem; text-align: left; border: 1px solid var(--border); }
+    .prose td { padding: .5rem .8rem; border: 1px solid var(--border); color: var(--text-secondary); }
+    .prose code { background: var(--bg-hover); padding: .1rem .4rem; border-radius: 3px; font-size: .85em; }
+    .prose em { color: var(--text-muted); }
     @media (max-width: 600px) { .nav-links { display: none; } }
   </style>
 </head>
@@ -102,7 +115,13 @@ const canonicalURL = canonical ?? new URL(Astro.url.pathname, Astro.site).href;
 
   <footer>
     <div class="container">
-      <p>© 2026 LLM Matcher · <a href="/about">About & Affiliate Disclosure</a></p>
+      <div class="footer-links">
+        <a href="/about">About & Affiliate Disclosure</a>
+        <a href="/privacy">Privacy Policy</a>
+        <a href="/terms">Terms of Service</a>
+        <a href="/blog">Blog</a>
+      </div>
+      <p>© 2026 LLM Matcher</p>
     </div>
   </footer>
 </body>

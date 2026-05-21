@@ -1,16 +1,26 @@
 ---
-import Base from '../../../layouts/Base.astro';
-import { profiles, getProfileBySlug } from '../../../data/quizProfiles';
+import { getCollection } from 'astro:content';
+import type { LLMModel } from '../../../data/models';
 import { getModelBySlug } from '../../../data/models';
+import { profiles, getProfileBySlug } from '../../../data/quizProfiles';
 import { affiliates } from '../../../data/affiliates';
+import Base from '../../../layouts/Base.astro';
 
 export async function getStaticPaths() {
-  return profiles.map(p => ({ params: { profile: p.slug } }));
+  return profiles.map((profile) => ({ params: { profile: profile.slug } }));
 }
+
 const { profile: slug } = Astro.params;
 const profile = getProfileBySlug(slug!);
 if (!profile) return Astro.redirect('/quiz');
-const topModels = profile.recommendedModels.map(s => getModelBySlug(s)).filter((m): m is NonNullable<typeof m> => !!m);
+
+const modelEntries = await getCollection('models');
+const models: LLMModel[] = modelEntries.map(({ data }) => data as LLMModel);
+const topModels = profile.recommendedModels
+  .map((modelSlug) => getModelBySlug(models, modelSlug))
+  .filter((model): model is LLMModel => !!model);
+const escapedProfileTitle = profile.title.replace(/'/g, "\\'");
+const escapedTopModelName = (topModels[0]?.name || '').replace(/'/g, "\\'");
 ---
 <Base
   title={`You're ${profile.title} — LLM Matcher Quiz Result`}
@@ -24,14 +34,14 @@ const topModels = profile.recommendedModels.map(s => getModelBySlug(s)).filter((
 
       <h2 style="font-size:1rem;margin-bottom:1rem;color:var(--text-muted)">Top models for you</h2>
       <div style="display:flex;flex-direction:column;gap:.7rem;text-align:left;margin-bottom:1.5rem">
-        {topModels.map((m, i) => (
-          <a href={`/models/${m.slug}`} class="model-row card">
-            <span class="rank-sm">#{i+1}</span>
+        {topModels.map((model, index) => (
+          <a href={`/models/${model.slug}`} class="model-row card">
+            <span class="rank-sm">#{index + 1}</span>
             <div>
-              <strong>{m.name}</strong>
-              <div style="font-size:.82rem;color:var(--text-secondary)">{m.description}</div>
+              <strong>{model.name}</strong>
+              <div style="font-size:.82rem;color:var(--text-secondary)">{model.description}</div>
             </div>
-            <code style="font-size:.75rem;color:var(--accent)">{m.ollamaCmd}</code>
+            <code style="font-size:.75rem;color:var(--accent)">{model.ollamaCmd}</code>
           </a>
         ))}
       </div>
@@ -53,7 +63,7 @@ const topModels = profile.recommendedModels.map(s => getModelBySlug(s)).filter((
 
     <div style="margin-top:1.5rem">
       <button class="btn btn-secondary"
-        onclick={`document.dispatchEvent(new CustomEvent('generate-badge',{detail:{gpuName:'${profile.title.replace(/'/g,"\\'")}',modelName:'${(topModels[0]?.name || '').replace(/'/g,"\\'")}' }}));trackEvent('badge_generated',{context:'quiz'})`}>
+        onclick={`document.dispatchEvent(new CustomEvent('generate-badge',{detail:{gpuName:'${escapedProfileTitle}',modelName:'${escapedTopModelName}' }}));trackEvent('badge_generated',{context:'quiz'})`}>
         🏷️ Generate My AI Badge
       </button>
     </div>

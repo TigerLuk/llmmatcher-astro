@@ -1,0 +1,10 @@
+name: "DeepSeek V4 Flash"
+slug: "deepseek-v4-flash"
+family: "DeepSeek V4"
+minVram: 40
+fullVram: 80
+params: "284B MoE (13B active)"
+tags: ["coding", "research", "reasoning", "agentic"]
+ollamaCmd: "ollama run deepseek-v4-flash:cloud"
+description: "DeepSeek's 2026 preview frontier model. In Ollama it is cloud-only as of May 2026, with a 284B MoE architecture, 13B active parameters per token, and a 1M-token context window."
+affiliateTier: "high"

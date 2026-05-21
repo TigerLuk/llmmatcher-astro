@@ -1,0 +1,11 @@
+name: "Mistral 7B"
+slug: "mistral-7b"
+family: "Mistral"
+minVram: 5
+fullVram: 14
+params: "7B"
+tags: ["chat", "creative", "coding"]
+ollamaCmd: "ollama run mistral"
+description: "Fast and lightweight Mistral model for laptops and lower-VRAM desktops."
+affiliateTier: "beginner"
+tpsRtx4090: 132

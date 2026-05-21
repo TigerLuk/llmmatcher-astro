@@ -1,0 +1,11 @@
+name: "Mistral NeMo 12B"
+slug: "mistral-nemo"
+family: "Mistral"
+minVram: 8
+fullVram: 24
+params: "12B"
+tags: ["chat", "coding"]
+ollamaCmd: "ollama run mistral-nemo"
+description: "Mistral NeMo 12B with 128K context — great for long-document analysis."
+affiliateTier: "mid"
+tpsRtx4090: 88

@@ -1,0 +1,5 @@
+name: "Apple M2 Pro"
+slug: "m2-pro"
+vram: 16
+category: "mac"
+tpsRatio: 0.22

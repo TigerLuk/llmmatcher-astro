@@ -1,0 +1,5 @@
+name: "Cloud H100 (80GB)"
+slug: "cloud-h100"
+vram: 80
+category: "cloud"
+tpsRatio: 2.98

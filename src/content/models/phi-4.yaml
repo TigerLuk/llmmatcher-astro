@@ -1,0 +1,11 @@
+name: "Phi-4"
+slug: "phi-4"
+family: "Phi"
+minVram: 10
+fullVram: 29
+params: "14B"
+tags: ["coding", "research"]
+ollamaCmd: "ollama run phi4"
+description: "Microsoft's 14B Phi model with strong coding quality for mid-range GPUs."
+affiliateTier: "mid"
+tpsRtx4090: 65

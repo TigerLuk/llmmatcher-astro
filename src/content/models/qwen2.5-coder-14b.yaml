@@ -1,0 +1,11 @@
+name: "Qwen 2.5 Coder 14B"
+slug: "qwen2.5-coder-14b"
+family: "Qwen 2.5 Coder"
+minVram: 9
+fullVram: 28
+params: "14B"
+tags: ["coding", "reasoning"]
+ollamaCmd: "ollama run qwen2.5-coder:14b"
+description: "Near-GPT-4 code quality locally — top pick for developers on 12GB+ GPUs."
+affiliateTier: "mid"
+tpsRtx4090: 78

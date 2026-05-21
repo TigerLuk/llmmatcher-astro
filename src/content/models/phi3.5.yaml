@@ -1,0 +1,11 @@
+name: "Phi 3.5 Mini"
+slug: "phi3.5"
+family: "Phi"
+minVram: 3
+fullVram: 8
+params: "3.8B"
+tags: ["reasoning", "coding", "chat"]
+ollamaCmd: "ollama run phi3.5"
+description: "Microsoft Phi 3.5 Mini — punches above its weight in reasoning and STEM."
+affiliateTier: "beginner"
+tpsRtx4090: 218

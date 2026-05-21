@@ -1,0 +1,11 @@
+name: "DeepSeek R1 14B"
+slug: "deepseek-r1-14b"
+family: "DeepSeek"
+minVram: 9
+fullVram: 28
+params: "14B distilled"
+tags: ["reasoning", "coding", "research"]
+ollamaCmd: "ollama run deepseek-r1:14b"
+description: "DeepSeek R1 14B distill — strong reasoning performance on 12GB GPUs."
+affiliateTier: "mid"
+tpsRtx4090: 80

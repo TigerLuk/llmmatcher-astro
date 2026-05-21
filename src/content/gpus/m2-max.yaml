@@ -1,0 +1,5 @@
+name: "Apple M2 Max"
+slug: "m2-max"
+vram: 32
+category: "mac"
+tpsRatio: 0.4

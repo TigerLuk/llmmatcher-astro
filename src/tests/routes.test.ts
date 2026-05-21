@@ -41,15 +41,17 @@ describe('build output — required pages exist', () => {
     expect(html).toContain('locallmmatcher.com');
   });
 
-  it('match/rtx-4060 page has correct title', () => {
+  it('match/rtx-4060 page has correct title and TPS copy', () => {
     const html = readFileSync(dist('match/rtx-4060/index.html'), 'utf-8');
     expect(html).toContain('RTX 4060');
     expect(html).toContain('8GB');
+    expect(html).toContain('Estimated TPS');
   });
 
-  it('sitemap contains all match pages', () => {
+  it('sitemap and robots outputs exist', () => {
     const hasSitemap = existsSync(dist('sitemap-index.xml')) || existsSync(dist('sitemap.xml'));
     expect(hasSitemap).toBe(true);
+    expect(existsSync(dist('robots.txt'))).toBe(true);
   });
 
   it('rss.xml is valid XML with items', () => {
@@ -58,9 +60,15 @@ describe('build output — required pages exist', () => {
     expect(rss).toContain('<channel>');
   });
 
-  it('about page contains affiliate disclosure text', () => {
-    const html = readFileSync(dist('about/index.html'), 'utf-8');
-    expect(html.toLowerCase()).toContain('affiliate');
+  it('about page contains affiliate disclosure text and TPS labels ship in compare/leaderboard', () => {
+    const aboutHtml = readFileSync(dist('about/index.html'), 'utf-8');
+    expect(aboutHtml.toLowerCase()).toContain('affiliate');
+
+    const compareHtml = readFileSync(dist('compare/index.html'), 'utf-8');
+    expect(compareHtml).toContain('tok/s');
+
+    const leaderboardHtml = readFileSync(dist('leaderboard/index.html'), 'utf-8');
+    expect(leaderboardHtml).toContain('RTX 4090 tok/s');
   });
 
   it('homepage has sponsored affiliate links', () => {
@@ -70,8 +78,8 @@ describe('build output — required pages exist', () => {
 });
 
 describe('model pages', () => {
-  it('each model has its own page', () => {
-    const modelSlugs = ['mistral-7b', 'phi-4', 'qwen3-8b', 'llama-4-scout', 'gemma3-12b'];
+  it('each key model has its own page', () => {
+    const modelSlugs = ['mistral-7b', 'phi-4', 'qwen3-8b', 'llama-4-scout', 'deepseek-r1'];
     modelSlugs.forEach(slug => {
       expect(existsSync(dist(`models/${slug}/index.html`))).toBe(true);
     });

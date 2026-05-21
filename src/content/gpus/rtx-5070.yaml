@@ -1,0 +1,5 @@
+name: "RTX 5070"
+slug: "rtx-5070"
+vram: 12
+category: "desktop"
+tpsRatio: 0.67

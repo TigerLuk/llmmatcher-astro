@@ -1,0 +1,6 @@
+name: "RTX 3080 (10GB)"
+slug: "rtx-3080"
+vram: 10
+category: "desktop"
+tpsRatio: 0.75
+amazonLink: "https://amzn.to/4uGfGdl"

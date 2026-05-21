@@ -1,6 +1,12 @@
 ---
+import { getCollection } from 'astro:content';
+import type { LLMModel } from '../../data/models';
 import Base from '../../layouts/Base.astro';
-import { models } from '../../data/models';
+
+const modelEntries = await getCollection('models');
+const models: LLMModel[] = modelEntries
+  .map(({ data }) => data as LLMModel)
+  .sort((a, b) => a.minVram - b.minVram || a.name.localeCompare(b.name));
 ---
 <Base title="LLM Model Database — All Local AI Models (2026)"
   description="Browse all open-source LLMs you can run locally. Filter by VRAM, use case, and model family.">
@@ -8,15 +14,15 @@ import { models } from '../../data/models';
     <h1>LLM Model Database</h1>
     <p style="color:var(--text-secondary);margin-bottom:2rem">{models.length} models · updated 2026</p>
     <div class="models-grid">
-      {models.map((m) => (
-        <a href={`/models/${m.slug}`} class="model-preview card">
+      {models.map((model) => (
+        <a href={`/models/${model.slug}`} class="model-preview card">
           <div style="display:flex;justify-content:space-between;align-items:baseline">
-            <strong>{m.name}</strong>
-            <span class="badge">{m.minVram}GB+</span>
+            <strong>{model.name}</strong>
+            <span class="badge">{model.minVram}GB+</span>
           </div>
-          <p style="color:var(--text-secondary);font-size:.82rem;margin-top:.4rem">{m.description}</p>
+          <p style="color:var(--text-secondary);font-size:.82rem;margin-top:.4rem">{model.description}</p>
           <div style="display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.6rem">
-            {m.tags.map((t) => <span class="badge tag">{t}</span>)}
+            {model.tags.map((tag) => <span class="badge tag">{tag}</span>)}
           </div>
         </a>
       ))}

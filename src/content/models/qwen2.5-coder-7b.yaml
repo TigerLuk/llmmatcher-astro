@@ -1,0 +1,11 @@
+name: "Qwen 2.5 Coder 7B"
+slug: "qwen2.5-coder-7b"
+family: "Qwen 2.5 Coder"
+minVram: 5
+fullVram: 14
+params: "7B"
+tags: ["coding"]
+ollamaCmd: "ollama run qwen2.5-coder:7b"
+description: "Best-in-class coding model for 8GB GPUs — excels at HumanEval benchmarks."
+affiliateTier: "mid"
+tpsRtx4090: 128

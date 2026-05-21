@@ -1,0 +1,6 @@
+name: "RTX 3090"
+slug: "rtx-3090"
+vram: 24
+category: "desktop"
+tpsRatio: 0.93
+amazonLink: "https://amzn.to/4uGfGdl"

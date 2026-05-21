@@ -1,0 +1,11 @@
+name: "Gemma 2 2B"
+slug: "gemma2-2b"
+family: "Gemma 2"
+minVram: 2
+fullVram: 4
+params: "2B"
+tags: ["chat"]
+ollamaCmd: "ollama run gemma2:2b"
+description: "Google Gemma 2 2B — ultra-fast lightweight model for quick responses."
+affiliateTier: "beginner"
+tpsRtx4090: 310

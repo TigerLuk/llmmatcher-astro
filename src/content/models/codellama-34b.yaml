@@ -1,0 +1,11 @@
+name: "Code Llama 34B"
+slug: "codellama-34b"
+family: "Code Llama"
+minVram: 20
+fullVram: 68
+params: "34B"
+tags: ["coding"]
+ollamaCmd: "ollama run codellama:34b"
+description: "Meta Code Llama 34B — top-tier code completion for 24GB GPUs."
+affiliateTier: "high"
+tpsRtx4090: 35

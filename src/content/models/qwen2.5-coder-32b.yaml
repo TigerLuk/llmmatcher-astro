@@ -1,0 +1,11 @@
+name: "Qwen 2.5 Coder 32B"
+slug: "qwen2.5-coder-32b"
+family: "Qwen 2.5 Coder"
+minVram: 20
+fullVram: 64
+params: "32B"
+tags: ["coding", "reasoning"]
+ollamaCmd: "ollama run qwen2.5-coder:32b"
+description: "State-of-the-art local code model — competitive with GPT-4 on code benchmarks."
+affiliateTier: "high"
+tpsRtx4090: 37

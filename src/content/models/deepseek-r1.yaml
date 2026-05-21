@@ -1,0 +1,11 @@
+name: "DeepSeek R1"
+slug: "deepseek-r1"
+family: "DeepSeek"
+minVram: 6
+fullVram: 16
+params: "8B distilled"
+tags: ["coding", "research", "reasoning"]
+ollamaCmd: "ollama run deepseek-r1"
+description: "Reasoning-focused distilled DeepSeek model with strong coding and math performance."
+affiliateTier: "mid"
+tpsRtx4090: 130

@@ -1,0 +1,5 @@
+name: "Apple M4 Pro"
+slug: "m4-pro"
+vram: 24
+category: "mac"
+tpsRatio: 0.3

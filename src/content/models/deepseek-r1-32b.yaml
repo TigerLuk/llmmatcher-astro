@@ -1,0 +1,11 @@
+name: "DeepSeek R1 32B"
+slug: "deepseek-r1-32b"
+family: "DeepSeek"
+minVram: 19
+fullVram: 64
+params: "32B distilled"
+tags: ["reasoning", "coding", "research"]
+ollamaCmd: "ollama run deepseek-r1:32b"
+description: "DeepSeek R1 32B distill — near-frontier reasoning on a single RTX 3090/4090."
+affiliateTier: "high"
+tpsRtx4090: 42

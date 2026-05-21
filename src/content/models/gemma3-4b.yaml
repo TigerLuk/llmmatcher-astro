@@ -1,0 +1,11 @@
+name: "Gemma 3 4B"
+slug: "gemma3-4b"
+family: "Gemma 3"
+minVram: 3
+fullVram: 8
+params: "4B"
+tags: ["chat", "coding"]
+ollamaCmd: "ollama run gemma3:4b"
+description: "Capable Gemma 3 4B model with vision support for versatile local use."
+affiliateTier: "beginner"
+tpsRtx4090: 195

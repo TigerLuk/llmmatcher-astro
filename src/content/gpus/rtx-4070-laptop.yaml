@@ -1,0 +1,6 @@
+name: "RTX 4070 Laptop"
+slug: "rtx-4070-laptop"
+vram: 8
+category: "laptop"
+tpsRatio: 0.34
+amazonLink: "https://amzn.to/4uGfGdl"

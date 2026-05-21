@@ -1,0 +1,11 @@
+name: "Phi-4 Mini"
+slug: "phi-4-mini"
+family: "Phi"
+minVram: 3
+fullVram: 8
+params: "3.8B"
+tags: ["chat", "coding"]
+ollamaCmd: "ollama run phi4-mini"
+description: "Small Phi model that runs well on 4GB-class GPUs and laptops."
+affiliateTier: "beginner"
+tpsRtx4090: 210

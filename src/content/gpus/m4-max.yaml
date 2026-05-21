@@ -1,0 +1,5 @@
+name: "Apple M4 Max"
+slug: "m4-max"
+vram: 36
+category: "mac"
+tpsRatio: 0.54

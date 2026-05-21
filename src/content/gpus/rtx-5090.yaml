@@ -1,0 +1,6 @@
+name: "RTX 5090"
+slug: "rtx-5090"
+vram: 32
+category: "desktop"
+tpsRatio: 1.77
+amazonLink: "https://amzn.to/4uGfGdl"

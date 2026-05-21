@@ -1,0 +1,11 @@
+name: "Qwen3 14B"
+slug: "qwen3-14b"
+family: "Qwen3"
+minVram: 10
+fullVram: 28
+params: "14B"
+tags: ["chat", "coding", "multilingual", "reasoning"]
+ollamaCmd: "ollama run qwen3:14b"
+description: "Qwen3 14B — best multilingual model for 12GB VRAM setups."
+affiliateTier: "mid"
+tpsRtx4090: 75

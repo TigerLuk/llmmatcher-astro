@@ -1,20 +1,29 @@
 ---
+import { getCollection } from 'astro:content';
+import type { GPU } from '../data/gpus';
+import type { LLMModel } from '../data/models';
 import Base from '../layouts/Base.astro';
-import { gpus } from '../data/gpus';
+
+const gpuEntries = await getCollection('gpus');
+const gpus: GPU[] = gpuEntries.map(({ data }) => data as GPU);
+const modelEntries = await getCollection('models');
+const models: LLMModel[] = modelEntries.map(({ data }) => data as LLMModel);
+const MAX_COMPARE_GPUS = 4;
+const compareData = { gpus, models, maxCompareGpus: MAX_COMPARE_GPUS };
 ---
 <Base title="GPU LLM Comparison — Compare Which Models Run on Each GPU"
-  description="Side-by-side comparison of GPUs and which LLMs they can run. Compare up to 4 GPUs.">
+  description={`Side-by-side comparison of GPUs and which LLMs they can run. Compare up to ${MAX_COMPARE_GPUS} GPUs.`}>
   <div class="container" style="padding-top:2rem">
     <h1>GPU Comparison</h1>
     <p style="color:var(--text-secondary);margin-bottom:1.5rem">
-      Select up to 4 GPUs to compare which models they can run
+      Select up to {MAX_COMPARE_GPUS} GPUs to compare compatibility and estimated tok/s
     </p>
 
     <div id="gpu-picker" style="display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1.5rem">
-      {gpus.map((g) => (
-        <button class="pick-btn" data-slug={g.slug} data-vram={g.vram} data-name={g.name}
+      {gpus.map((gpu) => (
+        <button class="pick-btn" data-slug={gpu.slug} data-vram={gpu.vram} data-name={gpu.name}
           onclick="togglePick(this)">
-          {g.name} ({g.vram}GB)
+          {gpu.name} ({gpu.vram}GB)
         </button>
       ))}
     </div>
@@ -23,21 +32,32 @@ import { gpus } from '../data/gpus';
   </div>
 </Base>
 
-<script>
-import { gpus } from '../data/gpus';
-import { models } from '../data/models';
+<script id="compare-data" type="application/json" set:html={JSON.stringify(compareData)}></script>
 
+<script>
+import type { GPU } from '../data/gpus';
+import type { LLMModel } from '../data/models';
+
+const compareDataEl = document.getElementById('compare-data');
+const compareData = compareDataEl?.textContent
+  ? JSON.parse(compareDataEl.textContent) as { gpus: GPU[]; models: LLMModel[]; maxCompareGpus: number }
+  : { gpus: [], models: [], maxCompareGpus: 4 };
+
+const gpus = compareData.gpus;
+const models = compareData.models;
+const maxCompareGpus = compareData.maxCompareGpus ?? 4;
 let selected: string[] = [];
 
-function togglePick(btn: HTMLButtonElement) {
-  const slug = btn.dataset.slug!;
+function togglePick(button: HTMLButtonElement) {
+  const slug = button.dataset.slug;
+  if (!slug) return;
   if (selected.includes(slug)) {
-    selected = selected.filter((s) => s !== slug);
-    btn.classList.remove('active');
+    selected = selected.filter((entry) => entry !== slug);
+    button.classList.remove('active');
   } else {
-    if (selected.length >= 4) return;
+    if (selected.length >= maxCompareGpus) return;
     selected.push(slug);
-    btn.classList.add('active');
+    button.classList.add('active');
   }
   const url = new URL(location.href);
   url.searchParams.set('gpus', selected.join(','));
@@ -46,30 +66,33 @@ function togglePick(btn: HTMLButtonElement) {
 }
 
 function renderTable() {
-  const wrap: HTMLElement | null = document.getElementById('compare-table-wrap');
+  const wrap = document.getElementById('compare-table-wrap');
   if (!wrap) return;
   if (selected.length === 0) {
     wrap.innerHTML = '';
     return;
   }
 
-  const selGPUs = selected
-    .map((s) => gpus.find((g) => g.slug === s))
-    .filter((g): g is NonNullable<(typeof gpus)[number]> => !!g);
+  const selectedGpus = selected
+    .map((slug) => gpus.find((gpu) => gpu.slug === slug))
+    .filter((gpu): gpu is GPU => !!gpu);
 
   let html = '<table class="compare-table"><thead><tr><th>Model</th>';
-  selGPUs.forEach((g) => {
-    html += `<th><div>${g.name}</div><div class="vram-label">${g.vram}GB VRAM</div>`;
-    if (g.amazonLink) html += `<a href="${g.amazonLink}" class="buy-link" target="_blank" rel="noopener sponsored" onclick="trackEvent('affiliate_click',{affiliate:'amazon_gpu',gpu:'${g.slug}'})">Buy on Amazon →</a>`;
+  selectedGpus.forEach((gpu) => {
+    html += `<th><div>${gpu.name}</div><div class="vram-label">${gpu.vram}GB VRAM</div><div class="tps-label">Compatibility + est. tok/s</div>`;
+    if (gpu.amazonLink) html += `<a href="${gpu.amazonLink}" class="buy-link" target="_blank" rel="noopener sponsored" onclick="trackEvent('affiliate_click',{affiliate:'amazon_gpu',gpu:'${gpu.slug}'})">Buy on Amazon →</a>`;
     html += '</th>';
   });
   html += '</tr></thead><tbody>';
 
-  models.forEach((m) => {
-    html += `<tr><td><a href="/models/${m.slug}">${m.name}</a><br><span class="vram-req">needs ${m.minVram}GB</span></td>`;
-    selGPUs.forEach((g) => {
-      const fits = m.minVram <= g.vram;
-      html += `<td class="${fits ? 'fit' : 'nofit'}">${fits ? '✅' : '✗'}</td>`;
+  models.forEach((model) => {
+    html += `<tr><td><a href="/models/${model.slug}">${model.name}</a><br><span class="vram-req">needs ${model.minVram}GB</span></td>`;
+    selectedGpus.forEach((gpu) => {
+      const fits = model.minVram <= gpu.vram;
+      const estimatedTps = typeof model.tpsRtx4090 === 'number' && typeof gpu.tpsRatio === 'number'
+        ? Math.round(model.tpsRtx4090 * gpu.tpsRatio)
+        : null;
+      html += `<td class="${fits ? 'fit' : 'nofit'}"><div>${fits ? '✅' : '✗'}</div>${fits && estimatedTps !== null ? `<div class="tps-row">~${estimatedTps} tok/s</div>` : ''}</td>`;
     });
     html += '</tr>';
   });
@@ -77,11 +100,11 @@ function renderTable() {
   wrap.innerHTML = html;
 }
 
-const urlGPUs = new URLSearchParams(location.search).get('gpus');
-if (urlGPUs) {
-  urlGPUs.split(',').forEach((slug) => {
-    const btn = document.querySelector<HTMLButtonElement>(`[data-slug="${slug}"]`);
-    if (btn) togglePick(btn);
+const urlGpus = new URLSearchParams(location.search).get('gpus');
+if (urlGpus) {
+  urlGpus.split(',').forEach((slug) => {
+    const button = document.querySelector<HTMLButtonElement>(`[data-slug="${slug}"]`);
+    if (button) togglePick(button);
   });
 }
 
@@ -98,7 +121,13 @@ if (urlGPUs) {
   .compare-table tr:hover td { background:var(--bg-hover); }
   .fit { color:var(--accent-green); }
   .nofit { color:var(--text-muted); }
-  .vram-label { font-size:.72rem;color:var(--text-muted); }
+  .vram-label, .tps-label { font-size:.72rem;color:var(--text-muted); }
+  .tps-label { margin-top:.2rem; }
   .vram-req { font-size:.75rem;color:var(--text-muted); }
   .buy-link { display:block;font-size:.72rem;color:var(--accent);margin-top:.3rem; }
+  .tps-row { font-size:.72rem;color:var(--accent-green);margin-top:.15rem; }
+  @media (max-width: 700px) {
+    .compare-table { font-size:.78rem; }
+    .compare-table th,.compare-table td { padding:.45rem .55rem; }
+  }
 </style>

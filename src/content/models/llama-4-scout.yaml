@@ -1,0 +1,11 @@
+name: "Llama 4 Scout"
+slug: "llama-4-scout"
+family: "Llama 4"
+minVram: 72
+fullVram: 217
+params: "109B MoE (17B active)"
+tags: ["chat", "research"]
+ollamaCmd: "ollama run llama4:scout"
+description: "Meta's multimodal long-context model for GPU servers and high-end multi-GPU setups."
+affiliateTier: "high"
+tpsRtx4090: 12

@@ -1,0 +1,11 @@
+name: "Llama 3.3 70B"
+slug: "llama3.3-70b"
+family: "Llama 3"
+minVram: 40
+fullVram: 140
+params: "70B"
+tags: ["chat", "coding", "research", "reasoning"]
+ollamaCmd: "ollama run llama3.3:70b"
+description: "Meta Llama 3.3 70B — near-GPT-4 quality, best on dual 3090s or cloud GPU."
+affiliateTier: "high"
+tpsRtx4090: 18

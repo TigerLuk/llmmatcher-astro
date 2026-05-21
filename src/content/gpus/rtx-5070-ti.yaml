@@ -1,0 +1,5 @@
+name: "RTX 5070 Ti"
+slug: "rtx-5070-ti"
+vram: 16
+category: "desktop"
+tpsRatio: 0.89

@@ -1,0 +1,15 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../layouts/Base.astro';
+
+const allPages = await getCollection('pages');
+const entry = allPages.find(e => e.id === 'terms' || e.id === 'terms.md');
+if (!entry) throw new Error('Page not found: terms');
+const { Content } = await render(entry);
+---
+<Base title="Terms of Service — LLM Matcher"
+  description="LLM Matcher terms of service. Rules for using the site and limitation of liability.">
+  <div class="container prose" style="max-width:780px;padding-top:2rem">
+    <Content />
+  </div>
+</Base>

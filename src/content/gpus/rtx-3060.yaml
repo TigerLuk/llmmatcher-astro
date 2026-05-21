@@ -1,0 +1,6 @@
+name: "RTX 3060"
+slug: "rtx-3060"
+vram: 12
+category: "desktop"
+tpsRatio: 0.36
+amazonLink: "https://amzn.to/4uGfGdl"

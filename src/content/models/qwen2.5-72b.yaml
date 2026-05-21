@@ -1,0 +1,11 @@
+name: "Qwen 2.5 72B"
+slug: "qwen2.5-72b"
+family: "Qwen 2.5"
+minVram: 43
+fullVram: 144
+params: "72B"
+tags: ["chat", "coding", "multilingual", "research"]
+ollamaCmd: "ollama run qwen2.5:72b"
+description: "Qwen 2.5 72B — multilingual excellence at the 70B scale for cloud deployments."
+affiliateTier: "high"
+tpsRtx4090: 16
