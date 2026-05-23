@@ -1,6 +1,6 @@
 backend:
   name: github
-  repo: YOUR_GITHUB_USERNAME/llmmatcher-astro
+  repo: TigerLuk/llmmatcher-astro
   branch: main
   base_url: https://locallmmatcher.com
   auth_endpoint: /api/auth
