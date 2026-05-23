@@ -6,46 +6,41 @@
   <title>LLM Matcher CMS</title>
   <script>
   (function() {
-    var received = false;
-    
-    function login(token) {
-      if (received) return;
-      received = true;
-      localStorage.setItem("decap_cms_auth_pending", token);
-      window.location.reload();
-    }
-    
-    if (typeof BroadcastChannel !== "undefined\") {
-      try {
-        var bc = new BroadcastChannel("decap_cms_auth");
-        bc.onmessage = function(e) {
-          if (e.data && e.data.token) login(e.data.token);
-        };
-      } catch(e) {}
-    }
-    
-    window.addEventListener("storage", function(e) {
-      if (e.key === "decap_cms_github_token\" && e.newValue) {
-        login(e.newValue);
+    var originalOpen = window.open;
+    window.open = function(url, target, features) {
+      if (typeof url === "string" && (
+        url.indexOf("/api/auth") !== -1 || 
+        url.indexOf("github.com/login/oauth") !== -1
+      )) {
+        window.location.href = url;
+        return { closed: false, close: function() {}, focus: function() {} };
       }
-    });
+      return originalOpen.apply(this, arguments);
+    };
+  })();
+  
+  (function() {
+    var hash = window.location.hash;
+    var token = null;
     
-    setInterval(function() {
-      var token = localStorage.getItem("decap_cms_github_token");
-      if (token) login(token);
-    }, 500);
+    if (hash) {
+      var match = hash.match(/[#&]token=([^&]+)/);
+      if (match) token = decodeURIComponent(match[1]);
+    }
     
-    window.addEventListener("load", function() {
-      var token = localStorage.getItem("decap_cms_auth_pending");
-      if (token) {
-        localStorage.removeItem("decap_cms_auth_pending");
-        localStorage.removeItem("decap_cms_github_token");
+    if (token) {
+      history.replaceState(null, null, window.location.pathname + window.location.search);
+      
+      function sendAuth() {
         var msg = "authorization:github:success:" + JSON.stringify({token: token});
-        setTimeout(function() {
-          window.postMessage(msg, window.location.origin);
-        }, 500);
+        window.postMessage(msg, window.location.origin);
       }
-    });
+      
+      setTimeout(sendAuth, 100);
+      setTimeout(sendAuth, 500);
+      setTimeout(sendAuth, 1500);
+      setTimeout(sendAuth, 3000);
+    }
   })();
   </script>
 </head>

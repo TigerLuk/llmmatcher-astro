@@ -28,31 +28,8 @@ export const onRequestGet = async (context: { request: Request; env: Env }) => {
       return new Response(`Error: ${JSON.stringify(tokenData)}`, { status: 400 });
     }
 
-    const safeToken = JSON.stringify(tokenData.access_token);
-
-    const html = `<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"><title>Auth</title></head>
-<body>
-<p>Authenticating...</p>
-<script>
-  var token = ${safeToken};
-  localStorage.setItem("decap_cms_github_token", token);
-  if (typeof BroadcastChannel !== "undefined\") {
-    try {
-      var bc = new BroadcastChannel("decap_cms_auth");
-      bc.postMessage({token: token});
-      bc.close();
-    } catch(e) {}
-  }
-  setTimeout(function() { window.close(); }, 300);
-</script>
-</body>
-</html>`;
-
-    return new Response(html, {
-      headers: { "Content-Type": "text/html; charset=utf-8" },
-    });
+    const safeToken = encodeURIComponent(tokenData.access_token);
+    return Response.redirect(`${url.origin}/admin/#token=${safeToken}`, 302);
   }
 
   const state = crypto.randomUUID();
@@ -62,18 +39,5 @@ export const onRequestGet = async (context: { request: Request; env: Env }) => {
   githubAuthUrl.searchParams.set("scope", "repo");
   githubAuthUrl.searchParams.set("state", state);
 
-  const safeUrl = githubAuthUrl.toString().replace(/"/g, '&quot;');
-
-  const redirectHtml = `<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"><title>Redirect</title></head>
-<body>
-<p>Redirecting...</p>
-<script>window.location.href = "${safeUrl}\";</script>
-</body>
-</html>`;
-
-  return new Response(redirectHtml, {
-    headers: { "Content-Type": "text/html; charset=utf-8" },
-  });
+  return Response.redirect(githubAuthUrl.toString(), 302);
 };
