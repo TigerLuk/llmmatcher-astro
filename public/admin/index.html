@@ -1,9 +1,46 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+n  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>LLM Matcher CMS</title>
+  <script>
+  (function() {
+    var authWindow = null;
+    var originalOpen = window.open;
+    
+    window.open = function(url, target, features) {
+      var win = originalOpen.apply(this, arguments);
+      if (typeof url === "string" && (url.includes("/api/auth") || url.includes("github.com"))) {
+        authWindow = win;
+      }
+      return win;
+    };
+    
+    if (typeof BroadcastChannel !== "undefined") {
+      var bc = new BroadcastChannel("decap_cms_auth");
+      bc.onmessage = function(e) {
+        if (e.data && e.data.token) {
+          if (authWindow) {
+            try { authWindow.close(); } catch(err) {}
+            authWindow = null;
+          }
+          window.postMessage({ token: e.data.token, provider: "github" }, window.location.origin);
+        }
+      };
+    }
+    
+    setInterval(function() {
+      var token = localStorage.getItem("decap_cms_github_token");
+      if (token && authWindow) {
+        localStorage.removeItem("decap_cms_github_token");
+        try { authWindow.close(); } catch(err) {}
+        authWindow = null;
+        window.postMessage({ token: token, provider: "github" }, window.location.origin);
+      }
+    }, 500);
+  })();
+  </script>
 </head>
 <body>
   <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
