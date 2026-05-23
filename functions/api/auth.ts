@@ -28,35 +28,68 @@ export const onRequestGet = async (context: { request: Request; env: Env }) => {
       return new Response(`Error: ${JSON.stringify(tokenData)}`, { status: 400 });
     }
 
-    const tokenJson = JSON.stringify(tokenData.access_token);
+    const tokenStr = JSON.stringify({ token: tokenData.access_token });
+    const parentOrigin = url.origin;
 
     const html = `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><title>Auth</title></head>
 <body>
+<p>Authenticating...</p>
 <script>
 (function() {
-  var token = ${tokenJson};
-  localStorage.setItem("decap_cms_github_token", token);
-  
-  if (typeof BroadcastChannel !== "undefined") {
-    try {
-      var bc = new BroadcastChannel("decap_cms_auth");
-      bc.postMessage({ token: token });
-      bc.close();
-    } catch(e) {}
+  var origin = "${parentOrigin}";
+  var authMsg = "authorization:github:success:${tokenStr}";
+  var handshakeMsg = "authorizing:github";
+
+  function log(msg) {
+    console.log("[OAuth] " + msg);
   }
-  
-  if (window.opener && !window.opener.closed) {
+
+  function sendAuth() {
+    log("Sending auth message: " + authMsg);
     try {
-      window.opener.postMessage({ token: token, provider: "github" }, "*");
-    } catch(e) {}
+      window.opener.postMessage(authMsg, origin);
+      log("Auth sent");
+    } catch(e) {
+      log("Failed: " + e.message);
+    }
+    setTimeout(function() { window.close(); }, 500);
 n  }
-  
-  setTimeout(function() { window.close(); }, 300);
+
+  function doHandshake() {
+    log("Sending handshake");
+    try {
+      window.opener.postMessage(handshakeMsg, origin);
+      log("Handshake sent");
+    } catch(e) {
+      log("Handshake failed: " + e.message);
+      sendAuth();
+      return;
+    }
+
+    var timeout = setTimeout(function() {
+      window.removeEventListener("message", onReply);
+      log("Timeout, sending auth directly");
+      sendAuth();
+    }, 3000);
+
+    function onReply(e) {
+      log("Got: " + e.data + " from " + e.origin);
+      if (e.origin === origin && e.data === handshakeMsg) {
+        clearTimeout(timeout);
+        window.removeEventListener("message", onReply);
+n        log("Handshake OK");
+        sendAuth();
+      }
+    }
+
+    window.addEventListener("message", onReply);
+  }
+
+  setTimeout(doHandshake, 100);
 })();
 </script>
-<p>Authorization successful. Closing window...</p>
 </body></html>`;
 
     return new Response(html, {
