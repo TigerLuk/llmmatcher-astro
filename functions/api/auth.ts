@@ -7,10 +7,8 @@ export const onRequestGet = async (context: { request: Request; env: Env }) => {
   const { request, env } = context;
   const url = new URL(request.url);
 
-  // ========== 处理 GitHub 回调 ==========
   const code = url.searchParams.get("code");
   if (code) {
-    // 1. 用 code 换 access_token
     const tokenResponse = await fetch("https://github.com/login/oauth/access_token", {
       method: "POST",
       headers: {
@@ -30,19 +28,22 @@ export const onRequestGet = async (context: { request: Request; env: Env }) => {
       return new Response(`Error: ${JSON.stringify(tokenData)}`, { status: 400 });
     }
 
-    // 2. 用 JSON.stringify 安全转义 token，避免特殊字符破坏 JS
     const tokenJson = JSON.stringify(tokenData.access_token);
 
-    // 3. Decap CMS 标准：通过 postMessage 把 token 传回父窗口
     const html = `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
   <title>Auth Success</title>
+</head>
+<body>
+  <h1 id="status">Processing...</h1>
+  <div id="debug"></div>
   <script>
     (function() {
       var token = ${tokenJson};
-n      var provider = "github";
+      var debugEl = document.getElementById("debug");
+      var statusEl = document.getElementById("status");
       var logs = [];
 
       function log(msg) {
@@ -50,61 +51,90 @@ n      var provider = "github";
         console.log("[OAuth] " + msg);
       }
 
-      function send() {
-        log("Token length: " + token.length);
+      function show() {
+        if (debugEl) {
+          debugEl.innerHTML = "<pre style='background:#f0f0f0;padding:10px;font-size:12px;white-space:pre-wrap;'>" + logs.join("\\n") + "</pre>";
+        }
+      }
+
+      function success() {
+        statusEl.textContent = "Authorization Successful!";
+        show();
+        setTimeout(function() { window.close(); }, 500);
+      }
+
+      function error(msg) {
+        statusEl.textContent = "Error: " + msg;
+        show();
+      }
+
+      function trySend() {
+        log("Trying to send token...");
         log("window.opener exists: " + !!window.opener);
-        log("window.opener closed: " + (window.opener ? window.opener.closed : "N/A"));
 
-        if (!window.opener || window.opener.closed) {
-          showError("Cannot access parent window. Try disabling popup blockers or use normal browsing mode instead of incognito.");
-          return;
+        // Method 1: Try window.opener.postMessage (standard Decap CMS way)
+        if (window.opener && !window.opener.closed) {
+          try {
+            window.opener.postMessage({ token: token, provider: "github" }, "*");
+            log("postMessage sent via window.opener");
+            success();
+            return;
+          } catch (e) {
+            log("postMessage failed: " + e.message);
+          }
         }
 
+        // Method 2: Try window.parent (iframe fallback)
+        if (window.parent && window.parent !== window) {
+          try {
+            window.parent.postMessage({ token: token, provider: "github" }, "*");
+            log("postMessage sent via window.parent");
+            success();
+            return;
+          } catch (e) {
+            log("parent.postMessage failed: " + e.message);
+          }
+        }
+
+        // Method 3: Store in localStorage and notify parent
         try {
-          window.opener.postMessage({ token: token, provider: provider }, "*");
-          log("postMessage sent OK");
-          showSuccess();
-          setTimeout(function() { window.close(); }, 800);
+          localStorage.setItem("decap_cms_auth_token", token);
+          localStorage.setItem("decap_cms_auth_provider", "github");
+          localStorage.setItem("decap_cms_auth_time", Date.now().toString());
+          log("Token saved to localStorage");
+
+          if (typeof BroadcastChannel !== "undefined") {
+            var bc = new BroadcastChannel("decap_cms_auth");
+            bc.postMessage({ token: token, provider: "github" });
+            bc.close();
+            log("BroadcastChannel message sent");
+          }
+
+          statusEl.innerHTML = "Token saved! <br>Please close this window and refresh the CMS page.";
+          show();
+          setTimeout(function() { window.close(); }, 2000);
         } catch (e) {
-          log("postMessage error: " + e.message);
-          showError(e.message);
+          error("All methods failed: " + e.message);
         }
       }
 
-      function showSuccess() {
-        document.body.innerHTML = "<h1>Authorization Successful</h1><p>Closing window...</p><div id=\'logs\'></div>";
-        showLogs();
-      }
-
-      function showError(msg) {
-        document.body.innerHTML = "<h1>Error</h1><p>" + msg + "</p><div id=\'logs\'></div>";
-        showLogs();
-      }
-
-      function showLogs() {
-        var el = document.getElementById("logs");
-        if (el) el.innerHTML = "<h3>Debug Log:</h3><pre style=\'background:#f5f5f5;padding:10px;margin-top:10px;font-size:12px;\'>" + logs.join("\\n") + "</pre>";
-      }
-
-      if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", send);
+      if (document.readyState === "complete" || document.readyState === "interactive") {
+        setTimeout(trySend, 100);
       } else {
-        send();
+        document.addEventListener("DOMContentLoaded", function() {
+          setTimeout(trySend, 100);
+        });
       }
     })();
   </script>
-</head>
-<body>
-  <h1>Processing...</h1>
 </body>
 </html>`;
 
     return new Response(html, {
       headers: { "Content-Type": "text/html; charset=utf-8" },
-    });
+n    });
   }
 
-  // ========== 发起 OAuth 授权 ==========
   const state = crypto.randomUUID();
   const githubAuthUrl = new URL("https://github.com/login/oauth/authorize");
   githubAuthUrl.searchParams.set("client_id", env.GITHUB_CLIENT_ID);
