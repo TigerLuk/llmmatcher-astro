@@ -2,7 +2,7 @@ backend:
   name: github
   repo: TigerLuk/llmmatcher-astro
   branch: main
-  base_url: https://locallmmatcher.com
+  base_url: https://llmmatcher.com
   auth_endpoint: /api/auth
 
 media_folder: public/images/blog
