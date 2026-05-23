@@ -4,57 +4,52 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>LLM Matcher CMS</title>
-n  <script>
-n  // Decap CMS OAuth Bridge - 处理弹窗无法 postMessage 的情况
-n  (function() {
-n    var authPopup = null;
-n    var originalOpen = window.open;
-n    var checkInterval = null;
+  <script>
+  (function() {
+    var authPopup = null;
+    var originalOpen = window.open;
+    var checkInterval = null;
 
-n    // 拦截 window.open 获取弹窗引用
-n    window.open = function(url, target, features) {
-n      var win = originalOpen.apply(this, arguments);
-n      if (typeof url === "string" && url.indexOf("api/auth") !== -1) {
-n        authPopup = win;
-n        startChecking();
-n      }
-n      return win;
-n    };
+    window.open = function(url, target, features) {
+      var win = originalOpen.apply(this, arguments);
+      if (typeof url === "string" && url.indexOf("api/auth") !== -1) {
+        authPopup = win;
+        startChecking();
+      }
+      return win;
+    };
 
-n    // 监听 BroadcastChannel
-n    if (typeof BroadcastChannel !== "undefined") {
-n      try {
-n        var bc = new BroadcastChannel("decap_cms_auth");
-n        bc.onmessage = function(e) {
-n          if (e.data && e.data.token) {
-n            finishAuth(e.data.token);
-n          }
-n        };
-n      } catch(e) {}
-n    }
+    if (typeof BroadcastChannel !== "undefined") {
+      try {
+        var bc = new BroadcastChannel("decap_cms_auth");
+        bc.onmessage = function(e) {
+          if (e.data && e.data.token) {
+            finishAuth(e.data.token);
+          }
+        };
+      } catch(e) {}
+    }
 
-n    // 检测弹窗关闭，从 localStorage 获取 token
-n    function startChecking() {
-n      if (checkInterval) clearInterval(checkInterval);
-n      checkInterval = setInterval(function() {
-n        if (authPopup && authPopup.closed) {
-n          clearInterval(checkInterval);
-n          var token = localStorage.getItem("decap_cms_github_token");
-n          if (token) {
-n            localStorage.removeItem("decap_cms_github_token");
-n            finishAuth(token);
-n          }
-n        }
-n      }, 500);
-n    }
+    function startChecking() {
+      if (checkInterval) clearInterval(checkInterval);
+      checkInterval = setInterval(function() {
+        if (authPopup && authPopup.closed) {
+          clearInterval(checkInterval);
+          var token = localStorage.getItem("decap_cms_github_token");
+          if (token) {
+            localStorage.removeItem("decap_cms_github_token");
+            finishAuth(token);
+          }
+        }
+      }, 500);
+    }
 
-n    // 手动发送认证消息给 Decap CMS
-n    function finishAuth(token) {
-n      var msg = "authorization:github:success:" + JSON.stringify({ token: token });
-n      window.postMessage(msg, window.location.origin);
-n    }
-n  })();
-n  </script>
+    function finishAuth(token) {
+      var msg = "authorization:github:success:" + JSON.stringify({ token: token });
+      window.postMessage(msg, window.location.origin);
+    }
+  })();
+  </script>
 </head>
 <body>
   <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
