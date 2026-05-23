@@ -6,20 +6,23 @@
 export const onRequestGet = async (context: { request: Request; env: Env }) => {
   const { request, env } = context;
   const url = new URL(request.url);
-  const code = url.searchParams.get("code");
 
+  const code = url.searchParams.get("code");
   if (code) {
     const tokenRes = await fetch("https://github.com/login/oauth/access_token", {
       method: "POST",
       headers: { Accept: "application/json", "Content-Type": "application/json" },
-      body: JSON.stringify({ client_id: env.GITHUB_CLIENT_ID, client_secret: env.GITHUB_CLIENT_SECRET, code }),
+      body: JSON.stringify({
+        client_id: env.GITHUB_CLIENT_ID,
+        client_secret: env.GITHUB_CLIENT_SECRET,
+        code,
+      }),
     });
     const tokenData = await tokenRes.json();
     if (tokenData.error || !tokenData.access_token) {
       return new Response("Error: " + JSON.stringify(tokenData), { status: 400 });
     }
 
-    // 标准 Decap/Sveltia CMS 认证回调格式
     const token = tokenData.access_token;
     const html = `<!DOCTYPE html>
 <html><head><meta charset="utf-8"><title>Auth</title></head>
