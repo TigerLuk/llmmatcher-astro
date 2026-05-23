@@ -4,6 +4,57 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>LLM Matcher CMS</title>
+n  <script>
+n  // Decap CMS OAuth Bridge - 处理弹窗无法 postMessage 的情况
+n  (function() {
+n    var authPopup = null;
+n    var originalOpen = window.open;
+n    var checkInterval = null;
+
+n    // 拦截 window.open 获取弹窗引用
+n    window.open = function(url, target, features) {
+n      var win = originalOpen.apply(this, arguments);
+n      if (typeof url === "string" && url.indexOf("api/auth") !== -1) {
+n        authPopup = win;
+n        startChecking();
+n      }
+n      return win;
+n    };
+
+n    // 监听 BroadcastChannel
+n    if (typeof BroadcastChannel !== "undefined") {
+n      try {
+n        var bc = new BroadcastChannel("decap_cms_auth");
+n        bc.onmessage = function(e) {
+n          if (e.data && e.data.token) {
+n            finishAuth(e.data.token);
+n          }
+n        };
+n      } catch(e) {}
+n    }
+
+n    // 检测弹窗关闭，从 localStorage 获取 token
+n    function startChecking() {
+n      if (checkInterval) clearInterval(checkInterval);
+n      checkInterval = setInterval(function() {
+n        if (authPopup && authPopup.closed) {
+n          clearInterval(checkInterval);
+n          var token = localStorage.getItem("decap_cms_github_token");
+n          if (token) {
+n            localStorage.removeItem("decap_cms_github_token");
+n            finishAuth(token);
+n          }
+n        }
+n      }, 500);
+n    }
+
+n    // 手动发送认证消息给 Decap CMS
+n    function finishAuth(token) {
+n      var msg = "authorization:github:success:" + JSON.stringify({ token: token });
+n      window.postMessage(msg, window.location.origin);
+n    }
+n  })();
+n  </script>
 </head>
 <body>
   <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
