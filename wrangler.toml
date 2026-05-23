@@ -5,12 +5,12 @@ compatibility_date = "2024-01-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "llmmatcher-votes"
-database_id = "REPLACE_WITH_D1_ID_AFTER_CREATION"
+database_id = "69968357-1715-4e3a-8f16-cc6dffba6a8c"
 
 [[kv_namespaces]]
 binding = "VOTE_RATE"
-id = "REPLACE_WITH_KV_ID_AFTER_CREATION"
+id = "987790992a554d0c907770e224e8935a"
 
 [[kv_namespaces]]
 binding = "SUBSCRIBERS"
-id = "REPLACE_WITH_SUBSCRIBERS_KV_ID"
+id = "c6f608fe8ec74b6383e6f9289c62936b"
