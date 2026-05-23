@@ -6,48 +6,46 @@
   <title>LLM Matcher CMS</title>
   <script>
   (function() {
-    var authPopup = null;
-    var originalOpen = window.open;
-    var checkInterval = null;
-
-    window.open = function(url, target, features) {
-      var win = originalOpen.apply(this, arguments);
-      if (typeof url === "string" && url.indexOf("api/auth") !== -1) {
-        authPopup = win;
-        startChecking();
-      }
-      return win;
-    };
-
-    if (typeof BroadcastChannel !== "undefined") {
+    var received = false;
+    
+    function login(token) {
+      if (received) return;
+      received = true;
+      localStorage.setItem("decap_cms_auth_pending", token);
+      window.location.reload();
+    }
+    
+    if (typeof BroadcastChannel !== "undefined\") {
       try {
         var bc = new BroadcastChannel("decap_cms_auth");
         bc.onmessage = function(e) {
-          if (e.data && e.data.token) {
-            finishAuth(e.data.token);
-          }
+          if (e.data && e.data.token) login(e.data.token);
         };
       } catch(e) {}
     }
-
-    function startChecking() {
-      if (checkInterval) clearInterval(checkInterval);
-      checkInterval = setInterval(function() {
-        if (authPopup && authPopup.closed) {
-          clearInterval(checkInterval);
-          var token = localStorage.getItem("decap_cms_github_token");
-          if (token) {
-            localStorage.removeItem("decap_cms_github_token");
-            finishAuth(token);
-          }
-        }
-      }, 500);
-    }
-
-    function finishAuth(token) {
-      var msg = "authorization:github:success:" + JSON.stringify({ token: token });
-      window.postMessage(msg, window.location.origin);
-    }
+    
+    window.addEventListener("storage", function(e) {
+      if (e.key === "decap_cms_github_token\" && e.newValue) {
+        login(e.newValue);
+      }
+    });
+    
+    setInterval(function() {
+      var token = localStorage.getItem("decap_cms_github_token");
+      if (token) login(token);
+    }, 500);
+    
+    window.addEventListener("load", function() {
+      var token = localStorage.getItem("decap_cms_auth_pending");
+      if (token) {
+        localStorage.removeItem("decap_cms_auth_pending");
+        localStorage.removeItem("decap_cms_github_token");
+        var msg = "authorization:github:success:" + JSON.stringify({token: token});
+        setTimeout(function() {
+          window.postMessage(msg, window.location.origin);
+        }, 500);
+      }
+    });
   })();
   </script>
 </head>
