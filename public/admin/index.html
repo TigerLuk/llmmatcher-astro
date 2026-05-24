@@ -4,9 +4,37 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>LLM Matcher CMS</title>
+  <style>
+    /* ===== 增大 Body/Markdown 编辑器区域高度 ===== */
+    
+    /* Slate editor (Markdown rich-text editor) */
+    [data-slate-editor] {
+      min-height: 500px !important;
+      max-height: 70vh !important;
+    }
+    
+    /* Editor container */
+    .svelteui-Editor-container,
+    [class*="editor"] [role="textbox"],
+    [class*="markdown"] [role="textbox"],
+    div[contenteditable="true"] {
+      min-height: 500px !important;
+    }
+    
+    /* Textarea fallback (raw markdown mode) */
+    textarea[class*="markdown"],
+    textarea[rows] {
+      min-height: 500px !important;
+    }
+    
+    /* Editor wrapper - ensure enough space */
+    [class*="MarkdownControl"],
+    [class*="markdown-control"] {
+      min-height: 520px !important;
+    }
+  </style>
 </head>
 <body>
   <script src="https://unpkg.com/@sveltia/cms/dist/sveltia-cms.js"></script>
 </body>
 </html>
-
