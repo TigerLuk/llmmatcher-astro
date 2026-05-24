@@ -1,11 +1,11 @@
----
+﻿---
 title: "Privacy Policy"
-lastUpdated: "2026-05-21"
+lastUpdated: "2026-05-24"
 ---
 
-*Last updated: May 21, 2026*
+*Last updated: May 24, 2026*
 
-LLM Matcher ("we", "us", or "our") operates the website locallmmatcher.com. This Privacy Policy explains how we collect, use, and protect your information when you visit our site.
+LLM Matcher ("we", "us", or "our") operates the website llmmatcher.com.
 
 ## Information We Collect
 
@@ -32,49 +32,44 @@ We use the following cookies:
 
 | Cookie | Purpose | Provider |
 |--------|---------|---------|
-| `_ga`, `_ga_*` | Google Analytics — tracks page visits and interactions | Google |
-| Session cookies | Standard browser session management | Cloudflare |
+| `_ga`, `_ga_*` | Google Analytics | Google |
+| Session cookies | Browser session management | Cloudflare |
 
-You can disable cookies in your browser settings. Note that disabling cookies will not prevent you from using any core features of this site.
+You can disable cookies in your browser settings.
 
 ## Affiliate Links
 
 This site contains affiliate links. When you click an affiliate link and make a purchase, we may receive a commission. See our [Affiliate Disclosure](/about) for full details.
 
-We do not share your personal data with affiliate partners. Clicking an affiliate link takes you to the partner's website, which has its own privacy policy.
-
 ## Data Sharing
 
-We do not sell, trade, or rent your personal information. We share data only in these limited cases:
+We do not sell, trade, or rent your personal information. We share data only with:
 
-- **Google Analytics**: Aggregated, anonymized usage data for site analytics
+- **Google Analytics**: Aggregated, anonymized usage data
 - **Cloudflare**: Infrastructure provider for hosting and edge functions
-- **Legal requirements**: If required by law or to protect our legal rights
+- **Legal requirements**: If required by law
 
 ## Data Retention
 
-- Analytics data: Retained per Google Analytics default settings (14 months)
-- Newsletter emails: Retained until you unsubscribe
-- Vote data: Retained indefinitely (no personal data, only anonymized vote records)
+- Analytics data: 14 months (Google Analytics default)
+- Newsletter emails: Until you unsubscribe
+- Vote data: Indefinitely (anonymized only)
 
 ## Your Rights
 
-Depending on your location, you may have the right to:
-
-- Access the personal data we hold about you
-- Request deletion of your data
-- Opt out of analytics tracking (use browser's Do Not Track setting or a browser extension such as uBlock Origin)
-- Unsubscribe from our newsletter at any time via the unsubscribe link in any email
+You may have the right to access, delete, or opt out of data collection. Use browser's Do Not Track or extensions like uBlock Origin.
 
 ## Third-Party Services
 
-This site uses the following third-party services, each with their own privacy policies:
+This site uses the following third-party services:
 
 - [Google Analytics](https://policies.google.com/privacy)
 - [Cloudflare](https://www.cloudflare.com/privacypolicy/)
 - [Amazon Associates](https://affiliate-program.amazon.com/help/operating/agreement)
 - [RunPod](https://www.runpod.io/legal/privacy-policy)
+- [Pluralsight](https://www.pluralsight.com/privacy)
+- [Surfshark](https://surfshark.com/privacy-policy)
 
 ## Contact
 
-If you have questions about this Privacy Policy, please open an issue on our GitHub repository.
+Open an issue on our GitHub repository.
