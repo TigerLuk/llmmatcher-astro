@@ -1,0 +1,18 @@
+---
+name: Phi-4 Mini 3.8b
+slug: phi4-mini-3.8b
+family: phi
+minVram: 8
+fullVram: 32
+params: 7B
+tags:
+- multilingual
+- reasoning
+- mathematics
+- function calling
+ollamaCmd: ollama run phi4-mini-3.8b
+description: Phi-4 Mini 3.8b offers enhanced multilingual support and reasoning, with
+  a minimum 8GB VRAM.
+affiliateTier: mid
+tpsRtx4090: 45000
+---

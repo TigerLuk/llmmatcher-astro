@@ -1,0 +1,16 @@
+---
+name: Meta's Llama 4
+slug: llama4
+family: llama
+minVram: 16
+fullVram: 32
+params: 70B
+tags:
+- multimodal
+- large-scale
+ollamaCmd: ollama run llama4
+description: Meta's latest multimodal model, excellent for complex tasks with 16GB
+  Min VRAM.
+affiliateTier: high
+tpsRtx4090: 10000
+---

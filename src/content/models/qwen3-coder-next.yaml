@@ -1,0 +1,17 @@
+---
+name: Qwen3-Coder-Next
+slug: qwen3-coder-next
+family: qwen
+minVram: 8
+fullVram: 32
+params: 7B
+tags:
+- chat
+- coding
+- development
+- local
+ollamaCmd: ollama run qwen3-coder-next
+description: Optimized for coding workflows, requires 8GB VRAM for local development.
+affiliateTier: mid
+tpsRtx4090: 2000
+---

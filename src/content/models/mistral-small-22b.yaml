@@ -1,0 +1,16 @@
+---
+name: Mistral Small 22B
+slug: mistral-small-22b
+family: mistral
+minVram: 16
+fullVram: 88
+params: 22B
+tags:
+- chat
+- coding
+- small
+ollamaCmd: ollama run mistral-small-22b
+description: New benchmark in small LLMs, 22B params, 16GB VRAM.
+affiliateTier: mid
+tpsRtx4090: 10000
+---

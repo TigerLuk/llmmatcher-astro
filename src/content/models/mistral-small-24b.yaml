@@ -1,0 +1,16 @@
+---
+name: Mistral Small 24B
+slug: mistral-small-24b
+family: mistral
+minVram: 12
+fullVram: 48
+params: 24B
+tags:
+- chat
+- coding
+- small
+ollamaCmd: ollama run mistral-small-24b
+description: New benchmark in small LLMs with 24B parameters, requires 12GB VRAM.
+affiliateTier: mid
+tpsRtx4090: 1500
+---

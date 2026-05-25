@@ -1,0 +1,15 @@
+---
+name: Phi-4 14B
+slug: phi4-14b
+family: phi
+minVram: 40
+fullVram: 28
+params: 14B
+tags:
+- state-of-the-art
+- open model
+ollamaCmd: ollama run phi4-14b
+description: State-of-the-art open model from Microsoft with a minimum of 40GB VRAM.
+affiliateTier: high
+tpsRtx4090: 50000
+---

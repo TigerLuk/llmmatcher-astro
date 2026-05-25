@@ -1,0 +1,18 @@
+---
+name: Qwen 3.6 27B
+slug: qwen3.6-27b
+family: qwen
+minVram: 32
+fullVram: 54
+params: 27B
+tags:
+- chat
+- coding
+- thinking preservation
+- agentic coding
+ollamaCmd: ollama run qwen3.6-27b
+description: Qwen3.6 offers enhanced agentic coding and thinking preservation with
+  a minimum 32GB VRAM.
+affiliateTier: high
+tpsRtx4090: 10000
+---

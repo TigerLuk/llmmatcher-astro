@@ -1,0 +1,16 @@
+---
+name: Gemma 3N
+slug: gemma3n
+family: gemma
+minVram: 8
+fullVram: 32
+params: 30B
+tags:
+- efficient
+- everyday devices
+ollamaCmd: ollama run gemma3n
+description: Gemma 3N is designed for efficient execution on everyday devices with
+  a minimum of 8GB VRAM.
+affiliateTier: mid
+tpsRtx4090: 3000
+---
